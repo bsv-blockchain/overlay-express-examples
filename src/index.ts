@@ -1,5 +1,16 @@
 import OverlayExpress from '@bsv/overlay-express'
 import { config } from 'dotenv'
+import ProtoMapTopicManager from './services/protomap/src/ProtoMapTopicManager'
+import ProtoMapLookupService from './services/protomap/src/ProtoMapLookupServiceFactory'
+import CertMapTopicManager from './services/certmap/src/CertMapTopicManager'
+import CertMapLookupService from './services/certmap/src/CertMapLookupServiceFactory'
+import BasketMapTopicManager from './services/basketmap/src/BasketMapTopicManager'
+import BasketMapLookupService from './services/basketmap/src/BasketMapLookupServiceFactory'
+import UHRPTopicManager from './services/uhrp/src/UHRPTopicManager'
+import UHRPLookupService from './services/uhrp/src/UHRPLookupServiceFactory'
+import IdentityTopicManager from './services/identity/src/IdentityTopicManager'
+import IdentityLookupService from './services/identity/src/IdentityLookupServiceFactory'
+
 config()
 
 // Hi there! Let's configure Overlay Express!
@@ -33,11 +44,29 @@ const main = async () => {
     // Here, you will configure the overlay topic managers and lookup services you want.
     // - Topic managers decide what outputs can go in your overlay
     // - Lookup services help people find things in your overlay
-    // - Make use of functions like `configureTopicManager` and `configureLookupServiceWithMongo`
-    // ADD YOUR OVERLAY SERVICES HERE
+    
+    // Protocols
+    server.configureTopicManager('tm_protomap', new ProtoMapTopicManager())
+    server.configureLookupServiceWithMongo('lsf_protomap', ProtoMapLookupService)
+
+    // Certificates
+    server.configureTopicManager('tm_certmap', new CertMapTopicManager())
+    server.configureLookupServiceWithMongo('lsf_certmap', CertMapLookupService)
+
+    // Baskets
+    server.configureTopicManager('tm_basketmap', new BasketMapTopicManager())
+    server.configureLookupServiceWithMongo('lsf_basketmap', BasketMapLookupService)
+
+    // UHRP
+    server.configureTopicManager('tm_uhrp', new UHRPTopicManager())
+    server.configureLookupServiceWithMongo('lsf_uhrp', UHRPLookupService)
+
+    // Identity
+    server.configureTopicManager('tm_identity', new IdentityTopicManager())
+    server.configureLookupServiceWithMongo('lsf_identity', IdentityLookupService)
 
     // For simple local deployments, sync can be disabled.
-    server.configureEnableGASPSync(false)
+    server.configureEnableGASPSync(false) // TODO enable once we're sure it's all working
 
     // Lastly, configure the engine and start the server!
     await server.configureEngine()

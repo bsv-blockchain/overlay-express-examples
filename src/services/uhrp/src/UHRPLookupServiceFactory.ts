@@ -1,6 +1,6 @@
 import { AdmissionMode, LookupService, OutputAdmittedByTopic, OutputSpent, SpendNotificationMode } from '@bsv/overlay'
 import { PushDrop, Utils, StorageUtils } from '@bsv/sdk'
-import { UHRPRecord, UTXOReference } from '../types.js'
+import { UHRPRecord, UTXOReference } from './types'
 import { Db, Collection } from 'mongodb'
 import uhrpLookupDocs from './UHRPLookupDocs.md.js'
 

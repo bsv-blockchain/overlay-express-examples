@@ -30,6 +30,12 @@ spec:
               value: mysql://appuser:apppass@mysql:3306/appdb
             - name: MONGO_URL
               value: mongodb://root:example@mongodb:27017
+            - name: SERVER_PRIVATE_KEY
+              value: ""
+            - name: ARC_API_KEY
+              value: ""
+            - name: HOSTING_URL
+              value: ""
           image: docker.io/bsvb/overlay-example:latest
           name: overlay
           ports:

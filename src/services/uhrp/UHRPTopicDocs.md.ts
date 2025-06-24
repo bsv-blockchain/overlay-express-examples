@@ -1,4 +1,5 @@
-export default `# Universal Hash Resolution Protocol Topic Manager Docs
+export default `
+# Universal Hash Resolution Protocol Topic Manager Docs
 
 To have outputs accepted into the UHRP overlay network, use the PushDrop template to create valid advertisements.
 

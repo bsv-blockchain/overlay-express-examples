@@ -1,7 +1,7 @@
 import { IdentityStorageManager } from './IdentityStorageManager.js'
 import { AdmissionMode, LookupAnswer, LookupFormula, LookupQuestion, LookupService, OutputAdmittedByTopic, OutputSpent, SpendNotificationMode } from '@bsv/overlay'
 import { ProtoWallet, PushDrop, Utils, VerifiableCertificate } from '@bsv/sdk'
-import docs from './docs/IdentityLookupDocs.md.js'
+import docs from './IdentityLookupDocs.md.js'
 import { IdentityQuery } from './types.js'
 import { Db } from 'mongodb'
 

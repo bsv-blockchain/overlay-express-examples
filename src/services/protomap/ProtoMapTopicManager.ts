@@ -1,14 +1,14 @@
 import { AdmittanceInstructions, TopicManager } from '@bsv/overlay'
-import { KeyDeriver, ProtoWallet, PushDrop, Signature, Transaction, Utils } from '@bsv/sdk'
-import docs from './docs/BasketMapTopicManagerDocs.md.js'
+import { KeyDeriver, ProtocolString5To400Bytes, ProtoWallet, PushDrop, SecurityLevel, Signature, Transaction, Utils, WalletProtocol } from '@bsv/sdk'
+import docs from './ProtoMapTopicManagerDocs.md.js'
 
 /**
- * Implements a topic manager for BasketMap name registry
+ * Implements a topic manager for ProtoMap name registry
  * @public
  */
-export default class BasketMapTopicManager implements TopicManager {
+export default class ProtoMapTopicManager implements TopicManager {
   /**
-   * Returns the outputs from the BasketMap transaction that are admissible.
+   * Returns the outputs from the ProtoMap transaction that are admissible.
    * @param beef - The transaction data in BEEF format
    * @param previousCoins - The previous coins to consider
    * @returns A promise that resolves with the admittance instructions
@@ -28,52 +28,50 @@ export default class BasketMapTopicManager implements TopicManager {
 
       // Try to decode and validate transaction outputs
       for (const [i, output] of parsedTransaction.outputs.entries()) {
-        // Decode the BasketMap registration data
+        // Decode the ProtoMap registration data
         try {
-          const { lockingPublicKey, fields } = PushDrop.decode(output.lockingScript)
+          const { fields, lockingPublicKey } = PushDrop.decode(output.lockingScript)
 
-          //  Parse and validate basket type registration data
-          const basketID = Utils.toUTF8(fields[0])
+          // Parse and validate protocol registration data
+          const protocolID = deserializeWalletProtocol(Utils.toUTF8(fields[0]))
           const name = Utils.toUTF8(fields[1])
           const iconURL = Utils.toUTF8(fields[2])
           const description = Utils.toUTF8(fields[3])
           const documentationURL = Utils.toUTF8(fields[4])
           const registryOperator = Utils.toUTF8(fields[5])
 
-          if (basketID === undefined || typeof basketID !== 'string') {
-            throw new Error('basketID param missing!')
+          if (
+            protocolID === undefined || typeof protocolID[1] !== 'string'
+            || (protocolID[0] !== 0 && protocolID[0] !== 1 && protocolID[0] !== 2)
+          ) {
+            throw new Error('Invalid protocol ID')
           }
           if (name === undefined || typeof name !== 'string') {
-            throw new Error('name param missing!')
+            throw new Error('Invalid name')
           }
-          // TODO: validate UHRP URL
           if (iconURL === undefined || typeof iconURL !== 'string') {
-            throw new Error('iconURL param missing!')
+            throw new Error('Invalid iconURL')
           }
           if (description === undefined || typeof description !== 'string') {
-            throw new Error('description param missing!')
+            throw new Error('Invalid description')
           }
-          // TODO: validate URL
           if (documentationURL === undefined || typeof documentationURL !== 'string') {
-            throw new Error('documentationURL param missing!')
+            throw new Error('Invalid documentationURL')
           }
           if (registryOperator === undefined || typeof registryOperator !== 'string') {
-            throw new Error('documentationURL param missing!')
+            throw new Error('Invalid registryOperator')
           }
 
           // Ensure lockingPublicKey came from fields[0]
-          // Either the certifier or the subject must control the basket token.
           const keyDeriver = new KeyDeriver('anyone')
           const expected = keyDeriver.derivePublicKey(
-            [1, 'basketmap'],
+            [1, 'protomap'],
             '1',
             registryOperator
           )
 
           // Make sure keys match
-          if (expected.toString() !== lockingPublicKey.toString()) {
-            throw new Error('BasketMap token not linked registry operator!')
-          }
+          if (expected.toString() !== lockingPublicKey.toString()) throw new Error('ProtMap token not linked to registry operator!')
 
           // Verify the signature
           const signature = fields.pop() as number[]
@@ -85,14 +83,14 @@ export default class BasketMapTopicManager implements TopicManager {
             data,
             signature,
             counterparty: registryOperator,
-            protocolID: [1, 'basketmap'],
+            protocolID: [1, 'protomap'],
             keyID: '1'
           })
           if (!hasValidSignature) throw new Error('Invalid signature!')
 
           outputsToAdmit.push(i)
         } catch (error) {
-          console.error('ERROR', error)
+          console.log('ERROR', error)
           // It's common for other outputs to be invalid; no need to log an error here
           continue
         }
@@ -103,7 +101,6 @@ export default class BasketMapTopicManager implements TopicManager {
 
       // Returns an array of outputs admitted
       // And previousOutputsRetained (none by default)
-      console.log('OUTPUTS TO ADMIT:', outputsToAdmit)
       return {
         outputsToAdmit,
         coinsToRetain: []
@@ -114,8 +111,6 @@ export default class BasketMapTopicManager implements TopicManager {
         console.error('Error identifying admissible outputs:', error)
       }
     }
-
-    console.log('OUTPUTS TO ADMIT:', outputsToAdmit)
     return {
       outputsToAdmit,
       coinsToRetain: []
@@ -123,7 +118,7 @@ export default class BasketMapTopicManager implements TopicManager {
   }
 
   /**
-   * Returns the documentation for the BasketMap topic
+   * Returns the documentation for the ProtoMap topic
    * @public
    * @returns {Promise<string>} - the documentation given as a string
    */
@@ -144,8 +139,32 @@ export default class BasketMapTopicManager implements TopicManager {
     informationURL?: string
   }> {
     return {
-      name: 'tm_basketmap',
-      shortDescription: 'BasketMap Registration Protocol'
+      name: 'ProtoMap Topic Manager',
+      shortDescription: 'Protocol information registration'
     }
   }
+}
+
+export function deserializeWalletProtocol(str: string): WalletProtocol {
+  // Parse the JSON string back into a JavaScript value.
+  const parsed = JSON.parse(str)
+
+  // Validate that the parsed value is an array with exactly two elements.
+  if (!Array.isArray(parsed) || parsed.length !== 2) {
+    throw new Error("Invalid wallet protocol format.")
+  }
+
+  const [security, protocolString] = parsed
+
+  // Validate that the security level is one of the allowed numbers.
+  if (![0, 1, 2].includes(security)) {
+    throw new Error("Invalid security level.")
+  }
+
+  // Validate that the protocol string is a string and its length is within the allowed bounds.
+  if (typeof protocolString !== "string") {
+    throw new Error("Invalid protocolID")
+  }
+
+  return [security as SecurityLevel, protocolString as ProtocolString5To400Bytes];
 }

@@ -1,46 +1,50 @@
-import { CertMapStorageManager } from './CertMapStorageManager.js'
+import { ProtoMapStorageManager } from './ProtoMapStorageManager.js'
 import { AdmissionMode, LookupAnswer, LookupFormula, LookupQuestion, LookupService, OutputAdmittedByTopic, OutputSpent, SpendNotificationMode } from '@bsv/overlay'
-import { PushDrop, Script, Utils } from '@bsv/sdk'
-import { CertMapRegistration } from './interfaces/CertMapTypes.js'
-import docs from './docs/CertMapLookupServiceDocs.md.js'
+import { PushDrop, Utils, WalletProtocol } from '@bsv/sdk'
+import { ProtoMapRegistration } from './ProtoMapTypes.js'
+import docs from './ProtoMapLookupServiceDocs.md.js'
 import { Db } from 'mongodb'
+import { deserializeWalletProtocol } from './ProtoMapTopicManager.js'
 
-interface CertMapQuery {
-  type?: string
+interface ProtoMapQuery {
   name?: string
   registryOperators?: string[]
+  protocolID?: WalletProtocol
 }
 
 /**
- * Implements a lookup service for CertMap name registry
+ * Implements a lookup service for ProtoMap name registry
  * @public
  */
-class CertMapLookupService implements LookupService {
+class ProtoMapLookupService implements LookupService {
   readonly admissionMode: AdmissionMode = 'locking-script'
   readonly spendNotificationMode: SpendNotificationMode = 'none'
 
-  constructor(public storageManager: CertMapStorageManager) { }
+  constructor(public storageManager: ProtoMapStorageManager) { }
 
   async outputAdmittedByTopic(payload: OutputAdmittedByTopic): Promise<void> {
     if (payload.mode !== 'locking-script') throw new Error('Invalid payload')
     const { txid, outputIndex, topic, lockingScript } = payload
-    if (topic !== 'tm_certmap') return
+    if (topic !== 'tm_protomap') return
 
-    // Decode the CertMap token fields from the Bitcoin outputScript
+    // Decode the ProtoMap token fields from the Bitcoin outputScript
     const { fields } = PushDrop.decode(lockingScript)
 
     // Parse record data correctly from field and validate it
-    const type = Utils.toUTF8(fields[0])
+    const [securityLevel, protocol] = deserializeWalletProtocol(Utils.toUTF8(fields[0]))
     const name = Utils.toUTF8(fields[1])
-    const registryOperator = Utils.toUTF8(fields[6])
+    const registryOperator = Utils.toUTF8(fields[5])
 
-    const registration: CertMapRegistration = {
-      type,
-      name,
-      registryOperator
+    const registration: ProtoMapRegistration = {
+      registryOperator,
+      protocolID: {
+        securityLevel: Number(securityLevel),
+        protocol
+      },
+      name
     }
 
-    // Store certificate type registration in the StorageEngine
+    // Store protocol registration
     await this.storageManager.storeRecord(
       txid,
       outputIndex,
@@ -51,7 +55,7 @@ class CertMapLookupService implements LookupService {
   async outputSpent(payload: OutputSpent): Promise<void> {
     if (payload.mode !== 'none') throw new Error('Invalid payload')
     const { topic, txid, outputIndex } = payload
-    if (topic !== 'tm_certmap') return
+    if (topic !== 'tm_protomap') return
     await this.storageManager.deleteRecord(txid, outputIndex)
   }
 
@@ -65,28 +69,28 @@ class CertMapLookupService implements LookupService {
       throw new Error('A valid query must be provided!')
     }
 
-    if (question.service !== 'ls_certmap') {
+    if (question.service !== 'ls_protomap') {
       throw new Error('Lookup service not supported!')
     }
 
-    const questionToAnswer = (question.query as CertMapQuery)
+    const questionToAnswer = (question.query as ProtoMapQuery)
 
     let results
-    if (questionToAnswer.type !== undefined && questionToAnswer.registryOperators !== undefined) {
-      results = await this.storageManager.findByType(
-        questionToAnswer.type,
-        questionToAnswer.registryOperators
-      )
-    } else if (questionToAnswer.name !== undefined && questionToAnswer.registryOperators !== undefined) {
+    if (questionToAnswer.name !== undefined && questionToAnswer.registryOperators !== undefined) {
       results = await this.storageManager.findByName(
         questionToAnswer.name,
         questionToAnswer.registryOperators
       )
+      return results
+    } else if (questionToAnswer.protocolID && questionToAnswer.registryOperators !== undefined) {
+      results = await this.storageManager.findByProtocolID(
+        questionToAnswer.protocolID,
+        questionToAnswer.registryOperators
+      )
+      return results
     } else {
-      throw new Error('type, name, and registryOperator must be valid params')
+      throw new Error('name, registryOperators, or protocolID must be valid params')
     }
-
-    return results
   }
 
   async getDocumentation(): Promise<string> {
@@ -101,13 +105,13 @@ class CertMapLookupService implements LookupService {
     informationURL?: string
   }> {
     return {
-      name: 'CertMap Lookup Service',
-      shortDescription: 'Certificate information registration'
+      name: 'ls_protomap',
+      shortDescription: 'Protocol name resolution'
     }
   }
 }
 
 // Factory function
-export default (db: Db): CertMapLookupService => {
-  return new CertMapLookupService(new CertMapStorageManager(db))
+export default (db: Db): ProtoMapLookupService => {
+  return new ProtoMapLookupService(new ProtoMapStorageManager(db))
 }

@@ -1,29 +1,29 @@
 import { Collection, Db } from 'mongodb'
-import { CertMapRegistration, CertMapRecord, UTXOReference } from './interfaces/CertMapTypes.js'
+import { BasketMapRegistration, BasketMapRecord, UTXOReference } from './BasketMapTypes.js'
 
 /**
- * Implements a Lookup StorageManager for CertMap name registry
+ * Implements a Lookup StorageManager for BasketMap name registry
  * @public
  */
-export class CertMapStorageManager {
-  private readonly records: Collection<CertMapRecord>
+export class BasketMapStorageManager {
+  private readonly records: Collection<BasketMapRecord>
 
   /**
-  * Constructs a new CertMapStorageManager instance
+  * Constructs a new BasketMapStorageManager instance
   * @public
   * @param db - connected mongo database instance
   */
   constructor(private readonly db: Db) {
-    this.records = db.collection<CertMapRecord>('certmapRecords')
+    this.records = db.collection<BasketMapRecord>('basketmapRecords')
   }
 
   /**
   * @public
   * @param txid
   * @param outputIndex
-  * @param certificate
+  * @param registration
   */
-  async storeRecord(txid: string, outputIndex: number, registration: CertMapRegistration): Promise<void> {
+  async storeRecord(txid: string, outputIndex: number, registration: BasketMapRegistration): Promise<void> {
     // Insert new record
     await this.records.insertOne({
       txid,
@@ -34,7 +34,7 @@ export class CertMapStorageManager {
   }
 
   /**
-  * Delete a matching CertMap record
+  * Delete a matching BasketMap record
   * @public
   * @param txid
   * @param outputIndex
@@ -43,37 +43,37 @@ export class CertMapStorageManager {
     await this.records.deleteOne({ txid, outputIndex })
   }
 
-  // Custom CertMap Lookup Functions --------------------------------------------------------------
+  // Custom BasketMap Lookup Functions --------------------------------------------------------------
 
   /**
-  * Find certificate type registration by type
+  * Find basket type registration by Id
   * @public
   * @param type
   * @param registryOperator
   * @returns
   */
-  async findByType(type: string, registryOperators: string[]): Promise<UTXOReference[]> {
+  async findById(basketID: string, registryOperators: string[]): Promise<UTXOReference[]> {
     // Find matching results from the DB
     return await this.findRecordWithQuery({
-      'registration.type': type,
+      'registration.basketID': basketID,
       'registration.registryOperator': { $in: registryOperators }
     })
   }
 
   /**
-  * Find certificate type registration token by name
+  * Find basket type registration token by name
   * @public
-  * @param {string} name - certificate type name to search for
-  * @param {string} registryOperator - operator of the certificate registration
+  * @param {string} name - basket type name to search for
+  * @param {string} registryOperator - operator of the basket registration
   * @returns
   */
   async findByName(name: string, registryOperators: string[]): Promise<UTXOReference[]> {
-    // Construct a dynamic query for certificate by name with fuzzy search support
+    // Construct a dynamic query for basket by name with fuzzy search support
     const query = {
       $and: [
         {
-          'registration.registryOperator': { $in: registryOperators },
-          'registration.name': this.getFuzzyRegex(name)
+          'registration.name': this.getFuzzyRegex(name),
+          'registration.registryOperator': { $in: registryOperators }
         }
       ]
     }

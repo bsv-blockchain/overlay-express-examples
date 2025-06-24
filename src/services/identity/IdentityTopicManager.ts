@@ -1,6 +1,6 @@
 import { AdmittanceInstructions, TopicManager } from '@bsv/overlay'
 import { ProtoWallet, PushDrop, Transaction, Utils, VerifiableCertificate } from '@bsv/sdk'
-import docs from './docs/IdentityTopicManagerDocs.md.js'
+import docs from './IdentityTopicManagerDocs.md.js'
 
 /**
  * Implements a topic manager for Identity key registry

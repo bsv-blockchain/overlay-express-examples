@@ -1,15 +1,20 @@
 import OverlayExpress from '@bsv/overlay-express'
 import { config } from 'dotenv'
-import ProtoMapTopicManager from './services/protomap/src/ProtoMapTopicManager'
-import ProtoMapLookupService from './services/protomap/src/ProtoMapLookupServiceFactory'
-import CertMapTopicManager from './services/certmap/src/CertMapTopicManager'
-import CertMapLookupService from './services/certmap/src/CertMapLookupServiceFactory'
-import BasketMapTopicManager from './services/basketmap/src/BasketMapTopicManager'
-import BasketMapLookupService from './services/basketmap/src/BasketMapLookupServiceFactory'
-import UHRPTopicManager from './services/uhrp/src/UHRPTopicManager'
-import UHRPLookupService from './services/uhrp/src/UHRPLookupServiceFactory'
-import IdentityTopicManager from './services/identity/src/IdentityTopicManager'
-import IdentityLookupService from './services/identity/src/IdentityLookupServiceFactory'
+import ProtoMapTopicManager from './services/protomap/ProtoMapTopicManager'
+import ProtoMapLookupService from './services/protomap/ProtoMapLookupServiceFactory'
+import CertMapTopicManager from './services/certmap/CertMapTopicManager'
+import CertMapLookupService from './services/certmap/CertMapLookupServiceFactory'
+import BasketMapTopicManager from './services/basketmap/BasketMapTopicManager'
+import BasketMapLookupService from './services/basketmap/BasketMapLookupServiceFactory'
+import UHRPTopicManager from './services/uhrp/UHRPTopicManager'
+import UHRPLookupService from './services/uhrp/UHRPLookupServiceFactory'
+import IdentityTopicManager from './services/identity/IdentityTopicManager'
+import IdentityLookupService from './services/identity/IdentityLookupServiceFactory'
+import MessageBoxTopicManager from './services/message-box/MessageBoxTopicManager'
+import MessageBoxLookupService from './services/message-box/MessageBoxLookupService'
+import UMPTopicManager from './services/ump/UMPTopicManager'
+import UMPLookupService from './services/ump/UMPLookupServiceFactory'
+
 
 config()
 
@@ -64,6 +69,14 @@ const main = async () => {
     // Identity
     server.configureTopicManager('tm_identity', new IdentityTopicManager())
     server.configureLookupServiceWithMongo('lsf_identity', IdentityLookupService)
+
+    // MessageBox
+    server.configureTopicManager('tm_messagebox', new MessageBoxTopicManager())
+    server.configureLookupServiceWithMongo('lsf_messagebox', MessageBoxLookupService)
+
+    // UMP
+    server.configureTopicManager('tm_ump', new UMPTopicManager())
+    server.configureLookupServiceWithMongo('lsf_ump', UMPLookupService)
 
     // For simple local deployments, sync can be disabled.
     server.configureEnableGASPSync(false) // TODO enable once we're sure it's all working

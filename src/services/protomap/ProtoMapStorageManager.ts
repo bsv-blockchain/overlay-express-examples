@@ -1,5 +1,5 @@
 import { Collection, Db } from 'mongodb'
-import { ProtoMapRegistration, ProtoMapRecord, UTXOReference } from './interfaces/ProtoMapTypes.js'
+import { ProtoMapRegistration, ProtoMapRecord, UTXOReference } from './ProtoMapTypes.js'
 import { WalletProtocol } from '@bsv/sdk'
 
 /**

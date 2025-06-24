@@ -1,14 +1,14 @@
 import { AdmittanceInstructions, TopicManager } from '@bsv/overlay'
 import { KeyDeriver, ProtoWallet, PushDrop, Signature, Transaction, Utils } from '@bsv/sdk'
-import docs from './docs/CertMapTopicManagerDocs.md.js'
+import docs from './BasketMapTopicManagerDocs.md.js'
 
 /**
- * Implements a topic manager for CertMap name registry
+ * Implements a topic manager for BasketMap name registry
  * @public
  */
-export default class CertMapTopicManager implements TopicManager {
+export default class BasketMapTopicManager implements TopicManager {
   /**
-   * Returns the outputs from the CertMap transaction that are admissible.
+   * Returns the outputs from the BasketMap transaction that are admissible.
    * @param beef - The transaction data in BEEF format
    * @param previousCoins - The previous coins to consider
    * @returns A promise that resolves with the admittance instructions
@@ -25,40 +25,57 @@ export default class CertMapTopicManager implements TopicManager {
       if (!Array.isArray(parsedTransaction.outputs) || parsedTransaction.outputs.length < 1) {
         throw new Error('Transaction outputs must be valid')
       }
+
       // Try to decode and validate transaction outputs
       for (const [i, output] of parsedTransaction.outputs.entries()) {
-        // Decode the CertMap registration data
+        // Decode the BasketMap registration data
         try {
-          const { fields, lockingPublicKey } = PushDrop.decode(output.lockingScript)
+          const { lockingPublicKey, fields } = PushDrop.decode(output.lockingScript)
 
-          // Parse and validate certificate type registration data
-          const type = Utils.toUTF8(fields[0])
+          //  Parse and validate basket type registration data
+          const basketID = Utils.toUTF8(fields[0])
           const name = Utils.toUTF8(fields[1])
           const iconURL = Utils.toUTF8(fields[2])
           const description = Utils.toUTF8(fields[3])
           const documentationURL = Utils.toUTF8(fields[4])
-          const certFields = JSON.parse(Utils.toUTF8(fields[5]))
-          const registryOperator = Utils.toUTF8(fields[6])
+          const registryOperator = Utils.toUTF8(fields[5])
 
-          if (typeof type !== 'string') throw new Error('type must be valid')
-          if (typeof name !== 'string') throw new Error('name must be valid')
-          if (typeof iconURL !== 'string') throw new Error('iconURL must be valid')
-          if (typeof description !== 'string') throw new Error('description must be valid')
-          if (typeof documentationURL !== 'string') throw new Error('documentationURL must be valid')
-          if (typeof certFields !== 'object') throw new Error('fields must be valid')
-          if (typeof registryOperator !== 'string') throw new Error('registryOperator must be valid')
+          if (basketID === undefined || typeof basketID !== 'string') {
+            throw new Error('basketID param missing!')
+          }
+          if (name === undefined || typeof name !== 'string') {
+            throw new Error('name param missing!')
+          }
+          // TODO: validate UHRP URL
+          if (iconURL === undefined || typeof iconURL !== 'string') {
+            throw new Error('iconURL param missing!')
+          }
+          if (description === undefined || typeof description !== 'string') {
+            throw new Error('description param missing!')
+          }
+          // TODO: validate URL
+          if (documentationURL === undefined || typeof documentationURL !== 'string') {
+            throw new Error('documentationURL param missing!')
+          }
+          if (registryOperator === undefined || typeof registryOperator !== 'string') {
+            throw new Error('documentationURL param missing!')
+          }
 
           // Ensure lockingPublicKey came from fields[0]
+          // Either the certifier or the subject must control the basket token.
           const keyDeriver = new KeyDeriver('anyone')
           const expected = keyDeriver.derivePublicKey(
-            [1, 'certmap'],
+            [1, 'basketmap'],
             '1',
             registryOperator
           )
 
           // Make sure keys match
-          if (expected.toString() !== lockingPublicKey.toString()) throw new Error('CertMap token not linked to registry operator!')
+          if (expected.toString() !== lockingPublicKey.toString()) {
+            throw new Error('BasketMap token not linked registry operator!')
+          }
 
+          // Verify the signature
           const signature = fields.pop() as number[]
           const data = fields.reduce((a, e) => [...a, ...e], [])
 
@@ -68,13 +85,14 @@ export default class CertMapTopicManager implements TopicManager {
             data,
             signature,
             counterparty: registryOperator,
-            protocolID: [1, 'certmap'],
+            protocolID: [1, 'basketmap'],
             keyID: '1'
           })
           if (!hasValidSignature) throw new Error('Invalid signature!')
 
           outputsToAdmit.push(i)
         } catch (error) {
+          console.error('ERROR', error)
           // It's common for other outputs to be invalid; no need to log an error here
           continue
         }
@@ -98,7 +116,6 @@ export default class CertMapTopicManager implements TopicManager {
     }
 
     console.log('OUTPUTS TO ADMIT:', outputsToAdmit)
-
     return {
       outputsToAdmit,
       coinsToRetain: []
@@ -106,7 +123,7 @@ export default class CertMapTopicManager implements TopicManager {
   }
 
   /**
-   * Returns the documentation for the CertMap topic
+   * Returns the documentation for the BasketMap topic
    * @public
    * @returns {Promise<string>} - the documentation given as a string
    */
@@ -127,8 +144,8 @@ export default class CertMapTopicManager implements TopicManager {
     informationURL?: string
   }> {
     return {
-      name: 'CertMap Topic Manager',
-      shortDescription: 'Certificate information registration'
+      name: 'tm_basketmap',
+      shortDescription: 'BasketMap Registration Protocol'
     }
   }
 }

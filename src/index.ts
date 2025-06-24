@@ -25,7 +25,7 @@ const main = async () => {
     const server = new OverlayExpress(
 
         // Name your overlay node with a one-word lowercase string
-        `testnode`,
+        `infralay`,
 
         // Provide the private key that gives your node its identity
         process.env.SERVER_PRIVATE_KEY!,

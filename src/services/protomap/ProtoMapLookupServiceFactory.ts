@@ -105,8 +105,8 @@ class ProtoMapLookupService implements LookupService {
     informationURL?: string
   }> {
     return {
-      name: 'ls_protomap',
-      shortDescription: 'Protocol name resolution'
+      name: 'ProtoMap',
+      shortDescription: 'Register protocolIDs for UX enrichment'
     }
   }
 }

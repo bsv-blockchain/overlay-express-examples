@@ -144,8 +144,8 @@ export default class BasketMapTopicManager implements TopicManager {
     informationURL?: string
   }> {
     return {
-      name: 'tm_basketmap',
-      shortDescription: 'BasketMap Registration Protocol'
+      name: 'BasketMap',
+      shortDescription: 'Register baskets for UX enrichment'
     }
   }
 }

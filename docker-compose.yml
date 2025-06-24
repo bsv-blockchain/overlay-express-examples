@@ -38,6 +38,7 @@ services:
     environment:
       MONGO_URL: mongodb://root:example@mongodb:27017
       KNEX_URL: mysql://appuser:apppass@mysql:3306/appdb
+      GASP_ENABLED: false
     command: ["npm", "run", "start"]
 
 volumes:

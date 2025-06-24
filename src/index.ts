@@ -1,5 +1,4 @@
 import OverlayExpress from '@bsv/overlay-express'
-import { config } from 'dotenv'
 import ProtoMapTopicManager from './services/protomap/ProtoMapTopicManager'
 import ProtoMapLookupService from './services/protomap/ProtoMapLookupServiceFactory'
 import CertMapTopicManager from './services/certmap/CertMapTopicManager'
@@ -14,9 +13,10 @@ import MessageBoxTopicManager from './services/message-box/MessageBoxTopicManage
 import MessageBoxLookupService from './services/message-box/MessageBoxLookupService'
 import UMPTopicManager from './services/ump/UMPTopicManager'
 import UMPLookupService from './services/ump/UMPLookupServiceFactory'
-
-
+import { config } from 'dotenv'
 config()
+
+const GASP_ENABLED = process.env?.GASP_ENABLED === 'true'
 
 // Hi there! Let's configure Overlay Express!
 const main = async () => {
@@ -79,7 +79,7 @@ const main = async () => {
     server.configureLookupServiceWithMongo('lsf_ump', UMPLookupService)
 
     // For simple local deployments, sync can be disabled.
-    server.configureEnableGASPSync(false) // TODO enable once we're sure it's all working
+    server.configureEnableGASPSync(GASP_ENABLED)
 
     // Lastly, configure the engine and start the server!
     await server.configureEngine()

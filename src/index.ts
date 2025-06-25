@@ -13,6 +13,8 @@ import MessageBoxTopicManager from './services/message-box/MessageBoxTopicManage
 import MessageBoxLookupService from './services/message-box/MessageBoxLookupService'
 import UMPTopicManager from './services/ump/UMPTopicManager'
 import UMPLookupService from './services/ump/UMPLookupServiceFactory'
+import HelloWorldTopicManager from './services/hello/HelloWorldTopicManager'
+import HelloWorldLookupService from './services/hello/HelloWorldLookupServiceFactory'
 import { config } from 'dotenv'
 config()
 
@@ -77,6 +79,10 @@ const main = async () => {
     // UMP
     server.configureTopicManager('tm_ump', new UMPTopicManager())
     server.configureLookupServiceWithMongo('lsf_ump', UMPLookupService)
+
+    // HelloWorld
+    server.configureTopicManager('tm_helloworld', new HelloWorldTopicManager())
+    server.configureLookupServiceWithMongo('lsf_helloworld', HelloWorldLookupService)
 
     // For simple local deployments, sync can be disabled.
     server.configureEnableGASPSync(GASP_ENABLED)

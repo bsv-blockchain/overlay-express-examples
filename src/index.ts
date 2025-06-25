@@ -1,3 +1,4 @@
+import { WalletAdvertiser } from '@bsv/overlay-discovery-services'
 import OverlayExpress from '@bsv/overlay-express'
 import ProtoMapTopicManager from './services/protomap/ProtoMapTopicManager'
 import ProtoMapLookupService from './services/protomap/ProtoMapLookupServiceFactory'
@@ -18,8 +19,6 @@ import HelloWorldLookupService from './services/hello/HelloWorldLookupServiceFac
 import { config } from 'dotenv'
 config()
 
-const GASP_ENABLED = process.env?.GASP_ENABLED === 'true'
-
 // Hi there! Let's configure Overlay Express!
 const main = async () => {
 
@@ -27,7 +26,7 @@ const main = async () => {
     const server = new OverlayExpress(
 
         // Name your overlay node with a one-word lowercase string
-        `infralay`,
+        process.env.NODE_NAME!,
 
         // Provide the private key that gives your node its identity
         process.env.SERVER_PRIVATE_KEY!,
@@ -35,6 +34,15 @@ const main = async () => {
         // Provide the HTTPS URL where your node is available on the internet
         process.env.HOSTING_URL!,
     )
+
+    server.configureEngineParams({
+        advertiser: new WalletAdvertiser(
+            process.env.NETWORK! as 'main' | 'test',
+            process.env.SERVER_PRIVATE_KEY!,
+            process.env.WALLET_STORAGE_URL!,
+            process.env.HOSTING_URL!
+        )
+    })
 
     // Set the ARC API key
     server.configureArcApiKey(process.env.ARC_API_KEY!)
@@ -85,7 +93,7 @@ const main = async () => {
     server.configureLookupServiceWithMongo('lsf_helloworld', HelloWorldLookupService)
 
     // For simple local deployments, sync can be disabled.
-    server.configureEnableGASPSync(GASP_ENABLED)
+    server.configureEnableGASPSync(process.env?.GASP_ENABLED === 'true')
 
     // Lastly, configure the engine and start the server!
     await server.configureEngine()

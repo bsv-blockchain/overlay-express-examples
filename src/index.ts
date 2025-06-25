@@ -33,6 +33,9 @@ const main = async () => {
 
         // Provide the HTTPS URL where your node is available on the internet
         process.env.HOSTING_URL!,
+        
+        // Provide an adminToken to enable the admin API
+        process.env.ADMIN_TOKEN!
     )
 
     server.configureEngineParams({

@@ -38,13 +38,17 @@ const main = async () => {
         process.env.ADMIN_TOKEN!
     )
 
+    const wa = new WalletAdvertiser(
+        process.env.NETWORK! as 'main' | 'test',
+        process.env.SERVER_PRIVATE_KEY!,
+        process.env.WALLET_STORAGE_URL!,
+        process.env.HOSTING_URL!
+    )
+
+    await wa.init()
+
     server.configureEngineParams({
-        advertiser: new WalletAdvertiser(
-            process.env.NETWORK! as 'main' | 'test',
-            process.env.SERVER_PRIVATE_KEY!,
-            process.env.WALLET_STORAGE_URL!,
-            process.env.HOSTING_URL!
-        )
+        advertiser: wa
     })
 
     // Set the ARC API key
@@ -65,41 +69,46 @@ const main = async () => {
     
     // Protocols
     server.configureTopicManager('tm_protomap', new ProtoMapTopicManager())
-    server.configureLookupServiceWithMongo('lsf_protomap', ProtoMapLookupService)
+    server.configureLookupServiceWithMongo('ls_protomap', ProtoMapLookupService)
 
     // Certificates
     server.configureTopicManager('tm_certmap', new CertMapTopicManager())
-    server.configureLookupServiceWithMongo('lsf_certmap', CertMapLookupService)
+    server.configureLookupServiceWithMongo('ls_certmap', CertMapLookupService)
 
     // Baskets
     server.configureTopicManager('tm_basketmap', new BasketMapTopicManager())
-    server.configureLookupServiceWithMongo('lsf_basketmap', BasketMapLookupService)
+    server.configureLookupServiceWithMongo('ls_basketmap', BasketMapLookupService)
 
     // UHRP
     server.configureTopicManager('tm_uhrp', new UHRPTopicManager())
-    server.configureLookupServiceWithMongo('lsf_uhrp', UHRPLookupService)
+    server.configureLookupServiceWithMongo('ls_uhrp', UHRPLookupService)
 
     // Identity
     server.configureTopicManager('tm_identity', new IdentityTopicManager())
-    server.configureLookupServiceWithMongo('lsf_identity', IdentityLookupService)
+    server.configureLookupServiceWithMongo('ls_identity', IdentityLookupService)
 
     // MessageBox
     server.configureTopicManager('tm_messagebox', new MessageBoxTopicManager())
-    server.configureLookupServiceWithMongo('lsf_messagebox', MessageBoxLookupService)
+    server.configureLookupServiceWithMongo('ls_messagebox', MessageBoxLookupService)
 
     // UMP
     server.configureTopicManager('tm_ump', new UMPTopicManager())
-    server.configureLookupServiceWithMongo('lsf_ump', UMPLookupService)
+    server.configureLookupServiceWithMongo('ls_ump', UMPLookupService)
 
     // HelloWorld
     server.configureTopicManager('tm_helloworld', new HelloWorldTopicManager())
-    server.configureLookupServiceWithMongo('lsf_helloworld', HelloWorldLookupService)
+    server.configureLookupServiceWithMongo('ls_helloworld', HelloWorldLookupService)
 
     // For simple local deployments, sync can be disabled.
     server.configureEnableGASPSync(process.env?.GASP_ENABLED === 'true')
 
     // Lastly, configure the engine and start the server!
     await server.configureEngine()
+
+    // Configure verbose request logging
+    server.configureVerboseRequestLogging(true)
+
+    // Start the server
     await server.start()
 }
 

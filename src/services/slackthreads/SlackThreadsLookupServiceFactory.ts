@@ -1,4 +1,4 @@
-import docs from './_SlackThreadsLookupServiceDocs.md.js'
+import docs from './SlackThreadsLookupServiceDocs.md.js'
 import {
   LookupService,
   LookupQuestion,
@@ -8,7 +8,7 @@ import {
   OutputAdmittedByTopic,
   OutputSpent
 } from '@bsv/overlay'
-import { SlackThreadsStorage } from './_SlackThreadsStorage.js'
+import { SlackThreadsStorage } from './SlackThreadsStorage.js'
 import { PushDrop, Utils } from '@bsv/sdk'
 import { Db } from 'mongodb'
 

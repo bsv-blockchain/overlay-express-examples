@@ -16,6 +16,8 @@ import UMPTopicManager from './services/ump/UMPTopicManager'
 import UMPLookupService from './services/ump/UMPLookupServiceFactory'
 import HelloWorldTopicManager from './services/hello/HelloWorldTopicManager'
 import HelloWorldLookupService from './services/hello/HelloWorldLookupServiceFactory'
+import SlackThreadTopicManager from './services/slackthreads/SlackThreadsTopicManager'
+import SlackThreadLookupService from './services/slackthreads/SlackThreadsLookupServiceFactory'
 import { config } from 'dotenv'
 config()
 
@@ -98,6 +100,10 @@ const main = async () => {
     // HelloWorld
     server.configureTopicManager('tm_helloworld', new HelloWorldTopicManager())
     server.configureLookupServiceWithMongo('ls_helloworld', HelloWorldLookupService)
+
+    // SlackThread
+    server.configureTopicManager('tm_slackthread', new SlackThreadTopicManager())
+    server.configureLookupServiceWithMongo('ls_slackthread', SlackThreadLookupService)
 
     // For simple local deployments, sync can be disabled.
     server.configureEnableGASPSync(process.env?.GASP_ENABLED === 'true')

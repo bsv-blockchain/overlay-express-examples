@@ -16,8 +16,8 @@ import UMPTopicManager from './services/ump/UMPTopicManager'
 import UMPLookupService from './services/ump/UMPLookupServiceFactory'
 import HelloWorldTopicManager from './services/hello/HelloWorldTopicManager'
 import HelloWorldLookupService from './services/hello/HelloWorldLookupServiceFactory'
-import SlackThreadTopicManager from './services/slackthreads/SlackThreadTopicManager'
-import SlackThreadLookupService from './services/slackthreads/SlackThreadLookupServiceFactory'
+import SlackThreadTopicManager from './services/slackthreads/_SlackThreadsTopicManager'
+import SlackThreadLookupService from './services/slackthreads/_SlackThreadsLookupServiceFactory'
 import { config } from 'dotenv'
 config()
 

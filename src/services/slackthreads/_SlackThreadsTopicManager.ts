@@ -1,6 +1,6 @@
 import { AdmittanceInstructions, TopicManager } from '@bsv/overlay'
 import { Signature, Transaction, PushDrop, Utils, OP } from '@bsv/sdk'
-import docs from './SlackThreadsTopicDocs.js'
+import docs from './_SlackThreadsTopicDocs.js'
 
 export default class SlackThreadsTopicManager implements TopicManager {
   /**

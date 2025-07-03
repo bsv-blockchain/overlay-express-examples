@@ -42,16 +42,16 @@ All critical configuration is supplied through environment variables. Create a `
 
 | Variable | Example | Description |
 | -------- | ------- | ----------- |
-| `NODE_NAME` | `my-overlay` | One-word, lowercase node identifier. |
-| `SERVER_PRIVATE_KEY` | `6f5523…` | 32-byte hex private key used to derive the node identity. |
+| `NODE_NAME` | `my-overlay` | One-word, lowercase overlay service node identifier. |
+| `SERVER_PRIVATE_KEY` | `6f5523…` | 32-byte hex root private key for the server's wallet for creating advertisements. |
 | `HOSTING_URL` | `https://my.overlay.network` | Public URL where your node is reachable. |
 | `ADMIN_TOKEN` | `supersecret` | Token required to access the admin API. |
-| `WALLET_STORAGE_URL` | `https://store-us-1.bsvb.tech` | Wallet storage endpoint. |
-| `NETWORK` | `main` or `test` | Bitcoin network your node operates on. |
-| `ARC_API_KEY` | — | Your ARC key for transaction look-ups. |
+| `WALLET_STORAGE_URL` | `https://store-us-1.bsvb.tech` | Wallet storage endpoint where advertisement tokens will be kept, and from where funds will be drawn. |
+| `NETWORK` | `main` or `test` | BSV Blockchain network your node operates on. |
+| `ARC_API_KEY` | — | Your ARC key for transaction broadcasting. |
 | `MONGO_URL` | `mongodb://root:example@localhost:27017` | MongoDB connection string. |
 | `KNEX_URL` | `mysql://user:pass@localhost:3306/appdb` | MySQL connection string used by Knex. |
-| `GASP_ENABLED` | `true / false` | Enable Global Address Space PoW sync. |
+| `GASP_ENABLED` | `true / false` | Enable Graph Aware Sync Protocol to sync with other overlays on the same topics. |
 
 A complete example can be found in `docker-compose.yml`.
 

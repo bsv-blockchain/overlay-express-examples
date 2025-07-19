@@ -24,10 +24,10 @@
     "typescript": "^5.8.3"
   },
   "dependencies": {
-    "@bsv/overlay": "^0.4.1",
+    "@bsv/overlay": "^0.4.2",
     "@bsv/overlay-discovery-services": "^1.4.1",
-    "@bsv/overlay-express": "^0.7.2",
-    "@bsv/sdk": "^1.6.10",
+    "@bsv/overlay-express": "^0.7.4",
+    "@bsv/sdk": "^1.6.17",
     "dotenv": "^16.5.0",
     "mongodb": "^6.17.0",
     "mysql2": "^3.14.1"

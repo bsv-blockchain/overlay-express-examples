@@ -18,6 +18,8 @@ import HelloWorldTopicManager from './services/hello/HelloWorldTopicManager'
 import HelloWorldLookupService from './services/hello/HelloWorldLookupServiceFactory'
 import SlackThreadTopicManager from './services/slackthreads/SlackThreadsTopicManager'
 import SlackThreadLookupService from './services/slackthreads/SlackThreadsLookupServiceFactory'
+import AnyTopicManager from './services/any/AnyTopicManager'
+import AnyLookupService from './services/any/AnyLookupServiceFactory'
 import { config } from 'dotenv'
 config()
 
@@ -104,6 +106,10 @@ const main = async () => {
     // SlackThread
     server.configureTopicManager('tm_slackthread', new SlackThreadTopicManager())
     server.configureLookupServiceWithMongo('ls_slackthread', SlackThreadLookupService)
+
+    // Any
+    server.configureTopicManager('tm_anytx', new AnyTopicManager())
+    server.configureLookupServiceWithMongo('ls_anytx', AnyLookupService)
 
     // For simple local deployments, sync can be disabled.
     server.configureEnableGASPSync(process.env?.GASP_ENABLED === 'true')

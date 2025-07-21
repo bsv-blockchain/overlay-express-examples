@@ -96,8 +96,8 @@ const main = async () => {
     server.configureLookupServiceWithMongo('ls_messagebox', MessageBoxLookupService)
 
     // UMP
-    server.configureTopicManager('tm_ump', new UMPTopicManager())
-    server.configureLookupServiceWithMongo('ls_ump', UMPLookupService)
+    server.configureTopicManager('tm_users', new UMPTopicManager())
+    server.configureLookupServiceWithMongo('ls_users', UMPLookupService)
 
     // HelloWorld
     server.configureTopicManager('tm_helloworld', new HelloWorldTopicManager())

@@ -39,7 +39,7 @@ export class SlackThreadLookupService implements LookupService {
   async outputAdmittedByTopic(payload: OutputAdmittedByTopic): Promise<void> {
     if (payload.mode !== 'locking-script') throw new Error('Invalid mode')
     const { topic, lockingScript, txid, outputIndex } = payload
-    if (payload.topic !== 'tm_slackthread') throw new Error(`Invalid topic "${topic}" for this service.`)
+    if (payload.topic !== 'tm_slackthread') return
 
     try {
       // Decode the PushDrop token
@@ -63,8 +63,9 @@ export class SlackThreadLookupService implements LookupService {
   async outputSpent(payload: OutputSpent): Promise<void> {
     if (payload.mode !== 'none') throw new Error('Invalid mode')
     const { topic, txid, outputIndex } = payload
-    if (topic !== 'tm_slackthread') throw new Error(`Invalid topic "${topic}" for this service.`)
-    await this.storage.deleteRecord(txid, outputIndex)
+    if (topic !== 'tm_slackthread') {
+      await this.storage.deleteRecord(txid, outputIndex)
+    }
   }
 
   /**

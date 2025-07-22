@@ -38,11 +38,11 @@ export class HelloWorldLookupService implements LookupService {
    * @param payload 
    */
   async outputAdmittedByTopic(payload: OutputAdmittedByTopic): Promise<void> {
-    if (payload.mode !== 'locking-script') throw new Error('Invalid mode')
-    const { topic, lockingScript, txid, outputIndex } = payload
-    if (payload.topic !== 'tm_helloworld') throw new Error(`Invalid topic "${topic}" for this service.`)
-
     try {
+      if (payload.mode !== 'locking-script') throw new Error('Invalid mode')
+      const { topic, lockingScript, txid, outputIndex } = payload
+      if (payload.topic !== 'tm_helloworld') return
+
       // Decode the PushDrop token
       const result = PushDrop.decode(lockingScript)
       if (!result.fields || result.fields.length < 1) throw new Error('Invalid HelloWorld token: wrong field count')
@@ -53,6 +53,7 @@ export class HelloWorldLookupService implements LookupService {
       // Persist for future lookup
       await this.storage.storeRecord(txid, outputIndex, message)
     } catch (err) {
+      const { txid, outputIndex } = payload as { txid: string; outputIndex: number }
       console.error(`HelloWorldLookupService: failed to index ${txid}.${outputIndex}`, err)
     }
   }
@@ -64,8 +65,9 @@ export class HelloWorldLookupService implements LookupService {
   async outputSpent(payload: OutputSpent): Promise<void> {
     if (payload.mode !== 'none') throw new Error('Invalid mode')
     const { topic, txid, outputIndex } = payload
-    if (topic !== 'tm_helloworld') throw new Error(`Invalid topic "${topic}" for this service.`)
-    await this.storage.deleteRecord(txid, outputIndex)
+    if (topic === 'tm_helloworld') {
+      await this.storage.deleteRecord(txid, outputIndex)
+    }
   }
 
   /**

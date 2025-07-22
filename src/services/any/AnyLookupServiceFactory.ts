@@ -30,7 +30,7 @@ export class AnyLookupService implements LookupService {
   async outputAdmittedByTopic(payload: OutputAdmittedByTopic): Promise<void> {
     if (payload.mode !== 'locking-script') throw new Error('Invalid mode')
     const { topic, txid, outputIndex } = payload
-    if (payload.topic !== 'tm_anytx') throw new Error(`Invalid topic "${topic}" for this service.`)
+    if (payload.topic !== 'tm_anytx') return
 
     try {
       await this.storage.storeRecord(txid, outputIndex)
@@ -46,8 +46,9 @@ export class AnyLookupService implements LookupService {
   async outputSpent(payload: OutputSpent): Promise<void> {
     if (payload.mode !== 'txid') throw new Error('Invalid mode')
     const { topic, txid, outputIndex, spendingTxid} = payload
-    if (topic !== 'tm_anytx') throw new Error(`Invalid topic "${topic}" for this service.`)
-    await this.storage.spendRecord(txid, outputIndex, spendingTxid)
+    if (topic !== 'tm_anytx') {
+      await this.storage.spendRecord(txid, outputIndex, spendingTxid)
+    }
   }
 
   /**

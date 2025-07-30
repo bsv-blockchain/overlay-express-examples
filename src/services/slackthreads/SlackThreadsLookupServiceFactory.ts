@@ -9,11 +9,12 @@ import {
   OutputSpent
 } from '@bsv/overlay'
 import { SlackThreadsStorage } from './SlackThreadsStorage.js'
-import { PushDrop, Utils } from '@bsv/sdk'
+import { Utils } from '@bsv/sdk'
 import { Db } from 'mongodb'
 
 export interface SlackThreadQuery {
   threadHash?: string
+  txid?: string
   limit?: number
   skip?: number
   startDate?: Date
@@ -39,18 +40,15 @@ export class SlackThreadLookupService implements LookupService {
   async outputAdmittedByTopic(payload: OutputAdmittedByTopic): Promise<void> {
     if (payload.mode !== 'locking-script') throw new Error('Invalid mode')
     const { topic, lockingScript, txid, outputIndex } = payload
-    if (payload.topic !== 'tm_slackthread') return
+    if (topic !== 'tm_slackthread') return
 
     try {
-      // Decode the PushDrop token
-      const result = PushDrop.decode(lockingScript)
-      if (!result.fields || result.fields.length < 1) throw new Error('Invalid SlackThread token: wrong field count')
-
-      const threadHash = Utils.toUTF8(result.fields[0])
-      if (threadHash.length < 2) throw new Error('Invalid SlackThread token: thread hash too short')
+      const threadHash = lockingScript.chunks[1].data
+      if (threadHash.length !== 32) throw new Error('Invalid SlackThread token: thread hash too short')
+      const threadHashString = Utils.toHex(threadHash)
 
       // Persist for future lookup
-      await this.storage.storeRecord(txid, outputIndex, threadHash)
+      await this.storage.storeRecord(txid, outputIndex, threadHashString)
     } catch (err) {
       console.error(`SlackThreadLookupService: failed to index ${txid}.${outputIndex}`, err)
     }
@@ -88,6 +86,7 @@ export class SlackThreadLookupService implements LookupService {
 
     const {
       threadHash,
+      txid,
       limit = 50,
       skip = 0,
       startDate,
@@ -106,6 +105,10 @@ export class SlackThreadLookupService implements LookupService {
 
     if (threadHash) {
       return this.storage.findByThreadHash(threadHash, limit, skip, sortOrder)
+    }
+
+    if (txid) {
+      return this.storage.findByTxid(txid, limit, skip, sortOrder)
     }
 
     return this.storage.findAll(limit, skip, from, to, sortOrder)

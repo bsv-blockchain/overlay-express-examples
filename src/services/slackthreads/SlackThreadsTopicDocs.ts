@@ -1,7 +1,7 @@
 export default `
 # SlackThread Topic Manager Documentation
 
-The **SlackThread Topic Manager** (topic ID: \`tm_slackthreads\`) lets clients Push hashes to chain and remove them by revealing the preimage.
+The **SlackThread Topic Manager** (topic ID: \`tm_slackthread\`) lets clients Push hashes to chain and remove them by revealing the preimage.
 
 Either there is a locking script of the form:
 

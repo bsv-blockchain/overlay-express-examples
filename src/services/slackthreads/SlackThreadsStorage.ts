@@ -84,9 +84,9 @@ export class SlackThreadsStorage {
   }
 
   /**
-   * Finds SlackThread records containing the specified thread hash (case-insensitive).
+   * Finds SlackThread records containing the specified transaction ID (case-insensitive).
    *
-   * @param threadHash       Partial or full thread hash to search for
+   * @param txid            Partial or full transaction ID to search for
    * @param limit         Max number of results to return (default = 50)
    * @param skip          Number of results to skip for pagination (default = 0)
    * @param sortOrder     'asc' | 'desc' – sort by createdAt (default = 'desc')

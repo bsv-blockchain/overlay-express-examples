@@ -11,6 +11,14 @@ export class SlackThreadsStorage {
    */
   constructor(private readonly db: Db) {
     this.records = db.collection<SlackThreadRecord>('slackThreadRecords')
+    this.createSearchableIndex() // Initialize the searchable index
+  }
+
+  /* Ensures a text index exists for the `threadHash` field, enabling efficient searches.
+   * The index is named `threadHashIndex`.
+   */
+  private async createSearchableIndex(): Promise<void> {
+    await this.records.createIndex({ threadHash: 1 }, { name: 'threadHashIndex' })
   }
 
   /**
@@ -61,6 +69,42 @@ export class SlackThreadsStorage {
     return this.records
       .find(
         { threadHash },
+        { projection: { txid: 1, outputIndex: 1, createdAt: 1 } }
+      )
+      .sort({ createdAt: direction })
+      .skip(skip)
+      .limit(limit)
+      .toArray()
+      .then(results =>
+        results.map(r => ({
+          txid: r.txid,
+          outputIndex: r.outputIndex
+        }))
+      )
+  }
+
+  /**
+   * Finds SlackThread records containing the specified transaction ID (case-insensitive).
+   *
+   * @param txid            Partial or full transaction ID to search for
+   * @param limit         Max number of results to return (default = 50)
+   * @param skip          Number of results to skip for pagination (default = 0)
+   * @param sortOrder     'asc' | 'desc' – sort by createdAt (default = 'desc')
+   */
+  async findByTxid(
+    txid: string,
+    limit: number = 50,
+    skip: number = 0,
+    sortOrder: 'asc' | 'desc' = 'desc'
+  ): Promise<UTXOReference[]> {
+    if (!txid) return []
+
+    // Map text value → numeric MongoDB sort direction
+    const direction = sortOrder === 'asc' ? 1 : -1
+
+    return this.records
+      .find(
+        { txid },
         { projection: { txid: 1, outputIndex: 1, createdAt: 1 } }
       )
       .sort({ createdAt: direction })

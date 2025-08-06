@@ -24,6 +24,8 @@ import AnyTopicManager from './services/any/AnyTopicManager'
 import AnyLookupService from './services/any/AnyLookupServiceFactory'
 import AppsTopicManager from './services/apps/AppsTopicManager'
 import AppsLookupService from './services/apps/AppsLookupServiceFactory'
+import DIDTopicManager from './services/did/DIDTopicManager'
+import DIDLookupService from './services/did/DIDLookupServiceFactory'
 import { config } from 'dotenv'
 config()
 
@@ -122,6 +124,10 @@ const main = async () => {
     // Apps
     server.configureTopicManager('tm_apps', new AppsTopicManager())
     server.configureLookupServiceWithMongo('ls_apps', AppsLookupService)
+
+    // DID
+    server.configureTopicManager('tm_did', new DIDTopicManager())
+    server.configureLookupServiceWithMongo('ls_did', DIDLookupService)
 
     // For simple local deployments, sync can be disabled.
     server.configureEnableGASPSync(process.env?.GASP_ENABLED === 'true')

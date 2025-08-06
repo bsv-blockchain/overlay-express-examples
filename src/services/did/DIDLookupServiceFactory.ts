@@ -1,6 +1,6 @@
 import { DIDStorageManager } from './DIDStorageManager.js'
 import { AdmissionMode, LookupFormula, LookupQuestion, LookupService, OutputAdmittedByTopic, OutputSpent, SpendNotificationMode } from '@bsv/overlay'
-import { LookupAnswer, PushDrop, Utils } from '@bsv/sdk'
+import { PushDrop, Utils } from '@bsv/sdk'
 import docs from './DIDLookupDocs.md.js'
 import { Db } from 'mongodb'
 import { DIDQuery } from './types.js'
@@ -50,7 +50,7 @@ class DIDLookupService implements LookupService {
     await this.storageManager.deleteRecord(txid, outputIndex)
   }
 
-  async lookup(question: LookupQuestion): Promise<LookupAnswer | LookupFormula> {
+  async lookup(question: LookupQuestion): Promise<LookupFormula> {
     console.log('DID lookup with question', question)
     if (question.query === undefined || question.query === null) {
       throw new Error('A valid query must be provided!')

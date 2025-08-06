@@ -18,6 +18,8 @@ import HelloWorldTopicManager from './services/hello/HelloWorldTopicManager'
 import HelloWorldLookupService from './services/hello/HelloWorldLookupServiceFactory'
 import SlackThreadTopicManager from './services/slackthreads/SlackThreadsTopicManager'
 import SlackThreadLookupService from './services/slackthreads/SlackThreadsLookupServiceFactory'
+import DesktopIntegrityTopicManager from './services/desktopintegrity/DesktopIntegrityTopicManager'
+import DesktopIntegrityLookupService from './services/desktopintegrity/DesktopIntegrityLookupServiceFactory'
 import AnyTopicManager from './services/any/AnyTopicManager'
 import AnyLookupService from './services/any/AnyLookupServiceFactory'
 import AppsTopicManager from './services/apps/AppsTopicManager'
@@ -108,6 +110,10 @@ const main = async () => {
     // SlackThread
     server.configureTopicManager('tm_slackthread', new SlackThreadTopicManager())
     server.configureLookupServiceWithMongo('ls_slackthread', SlackThreadLookupService)
+
+    // DesktopIntegrity
+    server.configureTopicManager('tm_desktopintegrity', new DesktopIntegrityTopicManager())
+    server.configureLookupServiceWithMongo('ls_desktopintegrity', DesktopIntegrityLookupService)
 
     // Any
     server.configureTopicManager('tm_anytx', new AnyTopicManager())

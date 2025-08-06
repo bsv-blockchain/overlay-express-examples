@@ -25,10 +25,9 @@ export default class DesktopIntegrityTopicManager implements TopicManager {
       // Inspect every output
       for (const [index, output] of parsedTx.outputs.entries()) {
         try {
-          if (output.lockingScript.chunks.length !== 3) throw new Error('Invalid locking script')
+          if (output.lockingScript.chunks.length !== 2) throw new Error('Invalid locking script')
           if (output.lockingScript.chunks[0].op !== OP.OP_FALSE) throw new Error('Invalid locking script')
           if (output.lockingScript.chunks[1].op !== OP.OP_RETURN) throw new Error('Invalid locking script')
-          if (output.lockingScript.chunks[2].op !== 32) throw new Error('Invalid locking script')
 
           outputsToAdmit.push(index)
         } catch (err) {

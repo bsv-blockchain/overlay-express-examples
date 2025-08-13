@@ -26,8 +26,8 @@
   "dependencies": {
     "@bsv/overlay": "^0.4.6",
     "@bsv/overlay-discovery-services": "^1.4.2",
-    "@bsv/overlay-express": "^0.7.10",
-    "@bsv/sdk": "^1.6.20",
+    "@bsv/overlay-express": "^0.7.11",
+    "@bsv/sdk": "^1.6.22",
     "dotenv": "^16.5.0",
     "mongodb": "^6.17.0",
     "mysql2": "^3.14.1"

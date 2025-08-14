@@ -27,6 +27,7 @@ import AppsLookupService from './services/apps/AppsLookupServiceFactory'
 import DIDTopicManager from './services/did/DIDTopicManager'
 import DIDLookupService from './services/did/DIDLookupServiceFactory'
 import { config } from 'dotenv'
+import packageJson from '../package.json'
 config()
 
 // Hi there! Let's configure Overlay Express!
@@ -137,6 +138,10 @@ const main = async () => {
 
     // Configure verbose request logging
     server.configureVerboseRequestLogging(true)
+
+    server.app.get('/version', (req, res) => {
+        res.json(packageJson)
+    })
 
     // Start the server
     await server.start()

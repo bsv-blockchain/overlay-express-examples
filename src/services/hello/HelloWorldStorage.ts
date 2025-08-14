@@ -115,10 +115,6 @@ export class HelloWorldStorage {
       .limit(limit)
       .project<UTXOReference>({ txid: 1, outputIndex: 1 })
       .toArray()
-      .then(results => results.map(record => ({
-        txid: record.txid,
-        outputIndex: record.outputIndex
-      })))
   }
 
   // Additional custom query functions can be added here. ---------------------------------------------

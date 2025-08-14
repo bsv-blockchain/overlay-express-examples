@@ -11,3 +11,8 @@ export interface DIDQuery {
   serialNumber?: Base64String,
   outpoint?: string
 }
+
+export interface UTXOReference {
+  txid: string
+  outputIndex: number
+}

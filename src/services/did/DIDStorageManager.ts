@@ -1,5 +1,5 @@
 import { Collection, Db } from 'mongodb'
-import { DIDRecord } from './types.js'
+import { DIDRecord, UTXOReference } from './types.js'
 import { Base64String } from '@bsv/sdk'
 import { LookupFormula } from '@bsv/overlay'
 
@@ -75,12 +75,6 @@ export class DIDStorageManager {
    */
   private async findRecordWithQuery(query: object): Promise<LookupFormula> {
     // Find matching results from the DB
-    const results = await this.records.find(query).project({ txid: 1, outputIndex: 1 }).toArray()
-    return results.map((record: any) => {
-      return {
-        txid: record.txid,
-        outputIndex: record.outputIndex
-      }
-    })
+    return await this.records.find(query).project<UTXOReference>({ txid: 1, outputIndex: 1 }).toArray()
   }
 } 

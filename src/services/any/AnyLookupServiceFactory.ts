@@ -91,8 +91,8 @@ export class AnyLookupService implements LookupService {
       const result = await this.storage.findByTxid(txid)
       return [result]
     }
-
-    return this.storage.findAll(limit, skip, from, to, sortOrder || 'desc')
+    
+    return await this.storage.findAll(limit, skip, from, to, sortOrder || 'desc')
   }
 
   /** Overlay docs. */

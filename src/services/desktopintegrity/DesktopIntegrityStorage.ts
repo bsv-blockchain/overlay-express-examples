@@ -76,13 +76,8 @@ export class DesktopIntegrityStorage {
       .sort({ createdAt: direction })
       .skip(skip)
       .limit(limit)
+      .project<UTXOReference>({ txid: 1, outputIndex: 1 })
       .toArray()
-      .then(results =>
-        results.map(r => ({
-          txid: r.txid,
-          outputIndex: r.outputIndex
-        }))
-      )
   }
 
   /**
@@ -112,13 +107,8 @@ export class DesktopIntegrityStorage {
       .sort({ createdAt: direction })
       .skip(skip)
       .limit(limit)
+      .project<UTXOReference>({ txid: 1, outputIndex: 1 })
       .toArray()
-      .then(results =>
-        results.map(r => ({
-          txid: r.txid,
-          outputIndex: r.outputIndex
-        }))
-      )
   }
 
   /**
@@ -146,16 +136,12 @@ export class DesktopIntegrityStorage {
 
     const sortDirection = sortOrder === 'asc' ? 1 : -1
 
-    return await this.records.find(query)
+    return this.records.find(query)
       .sort({ createdAt: sortDirection })
       .skip(skip)
       .limit(limit)
       .project<UTXOReference>({ txid: 1, outputIndex: 1 })
       .toArray()
-      .then(results => results.map(record => ({
-        txid: record.txid,
-        outputIndex: record.outputIndex
-      })))
   }
 
   // Additional custom query functions can be added here. ---------------------------------------------

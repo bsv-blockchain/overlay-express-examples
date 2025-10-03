@@ -20,6 +20,8 @@ import SlackThreadTopicManager from './services/slackthreads/SlackThreadsTopicMa
 import SlackThreadLookupService from './services/slackthreads/SlackThreadsLookupServiceFactory'
 import DesktopIntegrityTopicManager from './services/desktopintegrity/DesktopIntegrityTopicManager'
 import DesktopIntegrityLookupService from './services/desktopintegrity/DesktopIntegrityLookupServiceFactory'
+import FractionalizeTopicManager from './services/fractionalize/FractionalizeTopicManager'
+import FractionalizeLookupService from './services/fractionalize/FractionalizeLookupServiceFactory'
 import AnyTopicManager from './services/any/AnyTopicManager'
 import AnyLookupService from './services/any/AnyLookupServiceFactory'
 import AppsTopicManager from './services/apps/AppsTopicManager'
@@ -117,6 +119,10 @@ const main = async () => {
     // DesktopIntegrity
     server.configureTopicManager('tm_desktopintegrity', new DesktopIntegrityTopicManager())
     server.configureLookupServiceWithMongo('ls_desktopintegrity', DesktopIntegrityLookupService)
+
+    // Fractionalize
+    server.configureTopicManager('tm_fractionalize', new FractionalizeTopicManager())
+    server.configureLookupServiceWithMongo('ls_fractionalize', FractionalizeLookupService)
 
     // Any
     server.configureTopicManager('tm_anytx', new AnyTopicManager())

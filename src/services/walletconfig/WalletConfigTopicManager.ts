@@ -81,8 +81,8 @@ export default class WalletConfigTopicManager implements TopicManager {
           }
 
           // Verify the signature
-          const signature = fields.pop() as number[]
-          const data = fields.reduce((a, e) => [...a, ...e], [])
+          const signature = fields[fields.length - 1] as number[]
+          const data = fields.slice(0, -1).reduce((a, e) => [...a, ...e], [])
 
           // Verify the signature
           const anyoneWallet = new ProtoWallet('anyone')

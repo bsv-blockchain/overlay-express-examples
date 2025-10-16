@@ -1,4 +1,4 @@
-import docs from './FractionalizeLookupDocs.md.js'
+import docs from './SupplyChainLookupServiceDocs.md.js'
 import {
   LookupService,
   LookupQuestion,
@@ -8,20 +8,30 @@ import {
   OutputAdmittedByTopic,
   OutputSpent
 } from '@bsv/overlay'
-import { FractionalizeStorage } from './FractionalizeStorage.js'
+import { Utils } from '@bsv/sdk'
+import { SupplyChainStorage } from './SupplyChainStorage.js'
 import { Db } from 'mongodb'
-import { FractionalizeQuery } from './types.js'
+
+export interface SupplyChainQuery {
+  txid?: string
+  chainId?: string
+  limit?: number
+  skip?: number
+  startDate?: Date
+  endDate?: Date
+  sortOrder?: 'asc' | 'desc'
+}
 
 /**
- * Implements a lookup service for the Hello‑World protocol.
- * Each admitted BRC‑48 Pay‑to‑Push‑Drop output stores **exactly one** UTF‑8 field – the message.
- * This service indexes those messages so they can be queried later.
+ * Implements a lookup service for the SupplyChain protocol.
+ * Each admitted BRC‑48 Pay‑to‑Push‑Drop output stores **exactly one** UTF‑8 field – the thread hash.
+ * This service indexes those thread hashes so they can be queried later.
  */
-export class FractionalizeLookupService implements LookupService {
+export class SupplyChainLookupService implements LookupService {
   readonly admissionMode: AdmissionMode = 'locking-script'
   readonly spendNotificationMode: SpendNotificationMode = 'txid'
 
-  constructor(public storage: FractionalizeStorage) { }
+  constructor(public storage: SupplyChainStorage) { }
 
   /**
    * Invoked when a new output is added to the overlay.
@@ -29,13 +39,21 @@ export class FractionalizeLookupService implements LookupService {
    */
   async outputAdmittedByTopic(payload: OutputAdmittedByTopic): Promise<void> {
     if (payload.mode !== 'locking-script') throw new Error('Invalid mode')
-    const { topic, txid, outputIndex } = payload
-    if (payload.topic !== 'tm_fractionalize') return
+    const { topic, lockingScript, txid, outputIndex, offChainValues } = payload
+    if (topic !== 'tm_supplychain') return
+    // Make sure offChainValues exists
+    if (!offChainValues) throw new Error('Missing off-chain values')
+
+    // Change offChainValues from number[] back to utf8 object (originally a json string)
+    const offChainValuesString = Utils.toUTF8(offChainValues)
+    const offChainValuesObject = JSON.parse(offChainValuesString)
+    if (!offChainValuesObject.chainId) throw new Error('Missing chainId')
 
     try {
-      await this.storage.storeRecord(txid, outputIndex)
+      // Persist for future lookup
+      await this.storage.storeRecord(txid, outputIndex, offChainValuesObject)
     } catch (err) {
-      console.error(`FractionalizeLookupService: failed to index ${txid}.${outputIndex}`, err)
+      console.error(`SupplyChainLookupService: failed to index ${txid}.${outputIndex}`, err)
     }
   }
 
@@ -45,8 +63,8 @@ export class FractionalizeLookupService implements LookupService {
    */
   async outputSpent(payload: OutputSpent): Promise<void> {
     if (payload.mode !== 'txid') throw new Error('Invalid mode')
-    const { topic, txid, outputIndex, spendingTxid} = payload
-    if (topic !== 'tm_fractionalize') return
+    const { topic, txid, outputIndex, spendingTxid } = payload
+    if (topic !== 'tm_supplychain') return
     await this.storage.spendRecord(txid, outputIndex, spendingTxid)
   }
 
@@ -66,16 +84,17 @@ export class FractionalizeLookupService implements LookupService {
    */
   async lookup(question: LookupQuestion): Promise<LookupFormula> {
     if (!question) throw new Error('A valid query must be provided!')
-    if (question.service !== 'ls_fractionalize') throw new Error('Lookup service not supported!')
+    if (question.service !== 'ls_supplychain') throw new Error('Lookup service not supported!')
 
     const {
       txid,
+      chainId,
       limit = 50,
       skip = 0,
       startDate,
       endDate,
       sortOrder
-    } = question.query as FractionalizeQuery
+    } = question.query as SupplyChainQuery
 
     // Basic validation
     if (limit < 0) throw new Error('Limit must be a non‑negative number')
@@ -87,11 +106,14 @@ export class FractionalizeLookupService implements LookupService {
     if (to && isNaN(to.getTime())) throw new Error('Invalid endDate provided!')
 
     if (txid) {
-      const result = await this.storage.findByTxid(txid)
-      return [result]
+      return this.storage.findByTxid(txid, limit, skip, sortOrder)
     }
-    
-    return await this.storage.findAll(limit, skip, from, to, sortOrder || 'desc')
+
+    if (chainId) {
+      return this.storage.findByChainId(chainId, limit, skip)
+    }
+
+    return this.storage.findAll(limit, skip, from, to, sortOrder)
   }
 
   /** Overlay docs. */
@@ -108,11 +130,11 @@ export class FractionalizeLookupService implements LookupService {
     informationURL?: string
   }> {
     return {
-      name: 'Any Lookup Service',
-      shortDescription: 'Lookup your outputs.'
+      name: 'SupplyChain Lookup Service',
+      shortDescription: 'Find files on‑chain.'
     }
   }
 }
 
 // Factory
-export default (db: Db): FractionalizeLookupService => new FractionalizeLookupService(new FractionalizeStorage(db))
+export default (db: Db): SupplyChainLookupService => new SupplyChainLookupService(new SupplyChainStorage(db))

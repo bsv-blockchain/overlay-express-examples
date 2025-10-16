@@ -97,7 +97,7 @@ export default class WalletConfigTopicManager implements TopicManager {
 
           outputsToAdmit.push(i)
         } catch (error) {
-          console.error('ERROR', error)
+          console.error('Error validating output:', error)
           // It's common for other outputs to be invalid; no need to log an error here
           continue
         }

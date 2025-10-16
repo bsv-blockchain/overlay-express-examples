@@ -46,9 +46,8 @@ export class AnyLookupService implements LookupService {
   async outputSpent(payload: OutputSpent): Promise<void> {
     if (payload.mode !== 'txid') throw new Error('Invalid mode')
     const { topic, txid, outputIndex, spendingTxid} = payload
-    if (topic !== 'tm_anytx') {
-      await this.storage.spendRecord(txid, outputIndex, spendingTxid)
-    }
+    if (topic !== 'tm_anytx') return 
+    await this.storage.spendRecord(txid, outputIndex, spendingTxid)
   }
 
   /**

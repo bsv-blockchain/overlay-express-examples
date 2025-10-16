@@ -61,9 +61,8 @@ export class DesktopIntegrityLookupService implements LookupService {
   async outputSpent(payload: OutputSpent): Promise<void> {
     if (payload.mode !== 'none') throw new Error('Invalid mode')
     const { topic, txid, outputIndex } = payload
-    if (topic !== 'tm_desktopintegrity') {
-      await this.storage.deleteRecord(txid, outputIndex)
-    }
+    if (topic !== 'tm_desktopintegrity') return
+    await this.storage.deleteRecord(txid, outputIndex)
   }
 
   /**

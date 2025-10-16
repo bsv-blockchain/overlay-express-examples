@@ -22,6 +22,8 @@ import DesktopIntegrityTopicManager from './services/desktopintegrity/DesktopInt
 import DesktopIntegrityLookupService from './services/desktopintegrity/DesktopIntegrityLookupServiceFactory'
 import FractionalizeTopicManager from './services/fractionalize/FractionalizeTopicManager'
 import FractionalizeLookupService from './services/fractionalize/FractionalizeLookupServiceFactory'
+import SupplyChainTopicManager from './services/supplychain/SupplyChainTopicManager'
+import SupplyChainLookupService from './services/supplychain/SupplyChainLookupServiceFactory'
 import AnyTopicManager from './services/any/AnyTopicManager'
 import AnyLookupService from './services/any/AnyLookupServiceFactory'
 import AppsTopicManager from './services/apps/AppsTopicManager'
@@ -123,6 +125,10 @@ const main = async () => {
     // Fractionalize
     server.configureTopicManager('tm_fractionalize', new FractionalizeTopicManager())
     server.configureLookupServiceWithMongo('ls_fractionalize', FractionalizeLookupService)
+
+    // SupplyChain
+    server.configureTopicManager('tm_supplychain', new SupplyChainTopicManager())
+    server.configureLookupServiceWithMongo('ls_supplychain', SupplyChainLookupService)
 
     // Any
     server.configureTopicManager('tm_anytx', new AnyTopicManager())

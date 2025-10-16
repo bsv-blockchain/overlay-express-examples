@@ -100,6 +100,7 @@ The following overlay services are configured in [src/index.ts](src/index.ts):
 12. **Any** (`tm_anytx`, `ls_anytx`) - Generic transaction storage
 13. **Apps** (`tm_apps`, `ls_apps`) - Application registry
 14. **DID** (`tm_did`, `ls_did`) - Decentralized identifiers
+15. **WalletConfig** (`tm_walletconfig`, `ls_walletconfig`) - Wallet configuration service discovery
 
 ### Key Technical Patterns
 

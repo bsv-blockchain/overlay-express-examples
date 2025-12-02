@@ -24,6 +24,8 @@ import FractionalizeTopicManager from './services/fractionalize/FractionalizeTop
 import FractionalizeLookupService from './services/fractionalize/FractionalizeLookupServiceFactory'
 import SupplyChainTopicManager from './services/supplychain/SupplyChainTopicManager'
 import SupplyChainLookupService from './services/supplychain/SupplyChainLookupServiceFactory'
+import MonsterBattleTopicManager from './services/monsterbattle/MonsterBattleTopicManager'
+import MonsterBattleLookupService from './services/monsterbattle/MonsterBattleLookupServiceFactory'
 import AnyTopicManager from './services/any/AnyTopicManager'
 import AnyLookupService from './services/any/AnyLookupServiceFactory'
 import AppsTopicManager from './services/apps/AppsTopicManager'
@@ -131,6 +133,10 @@ const main = async () => {
     // SupplyChain
     server.configureTopicManager('tm_supplychain', new SupplyChainTopicManager())
     server.configureLookupServiceWithMongo('ls_supplychain', SupplyChainLookupService)
+
+    // MonsterBattle
+    server.configureTopicManager('tm_monsterbattle', new MonsterBattleTopicManager())
+    server.configureLookupServiceWithMongo('ls_monsterbattle', MonsterBattleLookupService)
 
     // Any
     server.configureTopicManager('tm_anytx', new AnyTopicManager())

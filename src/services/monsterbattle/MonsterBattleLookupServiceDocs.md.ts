@@ -1,7 +1,7 @@
 export default `
 # MonsterBattle Lookup Service Documentation
 
-The **MonsterBattle Lookup Service** (service ID: \`ls_monsterbattle\`) lets clients search the on-chain *MonsterBattle* messages that are indexed by the **MonsterBattle Topic Manager**. Each record represents a Pay-to-Push-Drop output whose single field is a UTF-8 message of at least two characters.
+The **MonsterBattle Lookup Service** (service ID: \`ls_monsterbattle\`) lets clients search the on-chain *MonsterBattle* transactions that are indexed by the **MonsterBattle Topic Manager**. Each record represents either a bsv-21 (1sat) token or an orderlock transaction.
 
 ## Example
 \`\`\`typescript

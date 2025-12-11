@@ -22,8 +22,8 @@ export default class MonsterBattleTopicManager implements TopicManager {
         throw new Error('Missing parameter: outputs')
       }
 
-      const orderLockSuffixHex = "2097dfd76851bf465e8f715593b217714858bbe9570ff3bd5e33840a34e20ff0262102ba79df5f8ae7604a9830f03c7933028186aede0675a16f025dc4f8be8eec0382201008ce7480da41702918d1ec8e6849ba32b4d65b1e40dc669c31a1e6306b266c0000"
-      const orderLockSuffixScript = Script.fromHex(orderLockSuffixHex)
+      const orderLockPrefixHex = "2097dfd76851bf465e8f715593b217714858bbe9570ff3bd5e33840a34e20ff0262102ba79df5f8ae7604a9830f03c7933028186aede0675a16f025dc4f8be8eec0382201008ce7480da41702918d1ec8e6849ba32b4d65b1e40dc669c31a1e6306b266c0000"
+      const orderLockSuffixScript = Script.fromHex(orderLockPrefixHex)
       const orderLockASM = orderLockSuffixScript.toASM()
 
       // Inspect every output
@@ -33,9 +33,14 @@ export default class MonsterBattleTopicManager implements TopicManager {
           const outputASM = output.lockingScript.toASM()
           if (outputASM.includes(orderLockASM)) {
             // This is an Orderlock script - accept it
+            console.log('[MonsterBattle] Orderlock transaction accepted')
+            console.log(`[MonsterBattle] ${outputASM}`)
+            console.log(`[MonsterBattle] ${orderLockASM}`)
             outputsToAdmit.push(index)
             continue
           }
+
+          console.log('[MonsterBattle] Incoming ordinal transaction')
 
           // Check for our ordinal script format
           if (output.lockingScript.chunks.length < 14) throw new Error('Invalid locking script error 1')
@@ -50,6 +55,8 @@ export default class MonsterBattleTopicManager implements TopicManager {
           if (output.lockingScript.chunks[11].op !== OP.OP_EQUALVERIFY) throw new Error('Invalid locking script error 10')
           if (output.lockingScript.chunks[12].op !== OP.OP_CHECKSIG) throw new Error('Invalid locking script error 11')
           if (output.lockingScript.chunks[13].op !== OP.OP_RETURN) throw new Error('Invalid locking script error 12')
+
+          console.log(`[MonsterBattle] Ordinal transaction passed checks`)
 
           outputsToAdmit.push(index)
         } catch (err) {

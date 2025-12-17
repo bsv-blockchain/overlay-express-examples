@@ -41,6 +41,7 @@ export default class FractionalizeTopicManager implements TopicManager {
         // If both true this is an ordinal token mint or server change output
         if (isOrdinal && isMultiSig) {
           const result = checkScriptFormat(output.lockingScript, "server-token")
+          console.log("[FractionalizeTopicManager] Server token output detected, result: ", result.message)
           if (result.valid) {
             outputsToAdmit.push(index)
           }
@@ -49,6 +50,7 @@ export default class FractionalizeTopicManager implements TopicManager {
         // If only ordinal is true this is a token transfer to a user
         if (isOrdinal && !isMultiSig) {
           const result = checkScriptFormat(output.lockingScript, "transfer-token")
+          console.log("[FractionalizeTopicManager] Server transfer token output detected, result: ", result.message)
           if (result.valid) {
             outputsToAdmit.push(index)
           }
@@ -57,6 +59,7 @@ export default class FractionalizeTopicManager implements TopicManager {
         // If only multisig is true this is a payment output
         if (isMultiSig && !isOrdinal) {
           const result = checkScriptFormat(output.lockingScript, "payment")
+          console.log("[FractionalizeTopicManager] Server payment output detected, result: ", result.message)
           if (result.valid) {
             outputsToAdmit.push(index)
           }

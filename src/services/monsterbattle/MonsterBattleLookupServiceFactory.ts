@@ -1,4 +1,4 @@
-import docs from './SupplyChainLookupServiceDocs.md.js'
+import docs from './MonsterBattleLookupServiceDocs.md.js'
 import {
   LookupService,
   LookupQuestion,
@@ -8,13 +8,12 @@ import {
   OutputAdmittedByTopic,
   OutputSpent
 } from '@bsv/overlay'
-import { Utils } from '@bsv/sdk'
-import { SupplyChainStorage } from './SupplyChainStorage.js'
+import { MonsterBattleStorage } from './MonsterBattleStorage.js'
 import { Db } from 'mongodb'
 
-export interface SupplyChainQuery {
+export interface MonsterBattleQuery {
+  threadHash?: string
   txid?: string
-  chainId?: string
   limit?: number
   skip?: number
   startDate?: Date
@@ -23,15 +22,15 @@ export interface SupplyChainQuery {
 }
 
 /**
- * Implements a lookup service for the SupplyChain protocol.
+ * Implements a lookup service for the MonsterBattle protocol.
  * Each admitted BRC‑48 Pay‑to‑Push‑Drop output stores **exactly one** UTF‑8 field – the thread hash.
  * This service indexes those thread hashes so they can be queried later.
  */
-export class SupplyChainLookupService implements LookupService {
+export class MonsterBattleLookupService implements LookupService {
   readonly admissionMode: AdmissionMode = 'locking-script'
-  readonly spendNotificationMode: SpendNotificationMode = 'txid'
+  readonly spendNotificationMode: SpendNotificationMode = 'none'
 
-  constructor(public storage: SupplyChainStorage) { }
+  constructor(public storage: MonsterBattleStorage) { }
 
   /**
    * Invoked when a new output is added to the overlay.
@@ -39,22 +38,14 @@ export class SupplyChainLookupService implements LookupService {
    */
   async outputAdmittedByTopic(payload: OutputAdmittedByTopic): Promise<void> {
     if (payload.mode !== 'locking-script') throw new Error('Invalid mode')
-    const { topic, lockingScript, txid, outputIndex, offChainValues } = payload
-    if (topic !== 'tm_supplychain') return
-    // Make sure offChainValues exists
-    if (!offChainValues) throw new Error('Missing off-chain values')
-
-    // Change offChainValues from number[] back to utf8 object (originally a json string)
-    const offChainValuesString = Utils.toUTF8(offChainValues)
-    const offChainValuesObject = JSON.parse(offChainValuesString)
-    if (!offChainValuesObject.chainId) throw new Error('Missing chainId')
-    console.log("SupplyChain LookupService offChainValuesObject:", offChainValuesObject)
+    const { topic, txid, outputIndex } = payload
+    if (topic !== 'tm_monsterbattle') return
 
     try {
       // Persist for future lookup
-      await this.storage.storeRecord(txid, outputIndex, offChainValuesObject)
+      await this.storage.storeRecord(txid, outputIndex)
     } catch (err) {
-      console.error(`SupplyChainLookupService: failed to index ${txid}.${outputIndex}`, err)
+      console.error(`Monsterbattle: failed to index ${txid}.${outputIndex}`, err)
     }
   }
 
@@ -63,10 +54,10 @@ export class SupplyChainLookupService implements LookupService {
    * @param payload - The output admitted by the topic manager
    */
   async outputSpent(payload: OutputSpent): Promise<void> {
-    if (payload.mode !== 'txid') throw new Error('Invalid mode')
-    const { topic, txid, outputIndex, spendingTxid } = payload
-    if (topic !== 'tm_supplychain') return
-    await this.storage.spendRecord(txid, outputIndex, spendingTxid)
+    if (payload.mode !== 'none') throw new Error('Invalid mode')
+    const { topic, txid, outputIndex } = payload
+    if (topic !== 'tm_monsterbattle') return
+    await this.storage.deleteRecord(txid, outputIndex)
   }
 
   /**
@@ -85,17 +76,17 @@ export class SupplyChainLookupService implements LookupService {
    */
   async lookup(question: LookupQuestion): Promise<LookupFormula> {
     if (!question) throw new Error('A valid query must be provided!')
-    if (question.service !== 'ls_supplychain') throw new Error('Lookup service not supported!')
+    if (question.service !== 'ls_monsterbattle') throw new Error('Lookup service not supported!')
 
     const {
+      threadHash,
       txid,
-      chainId,
       limit = 50,
       skip = 0,
       startDate,
       endDate,
       sortOrder
-    } = question.query as SupplyChainQuery
+    } = question.query as MonsterBattleQuery
 
     // Basic validation
     if (limit < 0) throw new Error('Limit must be a non‑negative number')
@@ -108,10 +99,6 @@ export class SupplyChainLookupService implements LookupService {
 
     if (txid) {
       return this.storage.findByTxid(txid, limit, skip, sortOrder)
-    }
-
-    if (chainId) {
-      return this.storage.findByChainId(chainId, limit, skip)
     }
 
     return this.storage.findAll(limit, skip, from, to, sortOrder)
@@ -131,11 +118,11 @@ export class SupplyChainLookupService implements LookupService {
     informationURL?: string
   }> {
     return {
-      name: 'SupplyChain Lookup Service',
-      shortDescription: 'Find files on‑chain.'
+      name: 'MonsterBattle Lookup Service',
+      shortDescription: 'Find monsterbattle tokens on‑chain.'
     }
   }
 }
 
 // Factory
-export default (db: Db): SupplyChainLookupService => new SupplyChainLookupService(new SupplyChainStorage(db))
+export default (db: Db): MonsterBattleLookupService => new MonsterBattleLookupService(new MonsterBattleStorage(db))

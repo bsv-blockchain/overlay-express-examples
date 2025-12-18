@@ -51,7 +51,7 @@ export default class MonsterBattleTopicManager implements TopicManager {
           if (output.lockingScript.chunks[7].op !== OP.OP_ENDIF) throw new Error('Invalid locking script error 6')
           if (output.lockingScript.chunks[8].op !== OP.OP_DUP) throw new Error('Invalid locking script error 7')
           if (output.lockingScript.chunks[9].op !== OP.OP_HASH160) throw new Error('Invalid locking script error 8')
-          if (output.lockingScript.chunks[10].op !== 32) throw new Error('Invalid locking script error 9')
+          if (output.lockingScript.chunks[10].op !== 20) throw new Error('Invalid locking script error 9')
           if (output.lockingScript.chunks[11].op !== OP.OP_EQUALVERIFY) throw new Error('Invalid locking script error 10')
           if (output.lockingScript.chunks[12].op !== OP.OP_CHECKSIG) throw new Error('Invalid locking script error 11')
           if (output.lockingScript.chunks[13].op !== OP.OP_RETURN) throw new Error('Invalid locking script error 12')

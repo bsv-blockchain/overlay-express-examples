@@ -29,15 +29,19 @@ export default class MonsterBattleTopicManager implements TopicManager {
       // Inspect every output
       for (const [index, output] of parsedTx.outputs.entries()) {
         try {
+          const outputASM = output.lockingScript.toASM();
+
           // Check for Orderlock script format first
-          const outputASM = output.lockingScript.toASM()
           if (outputASM.includes(orderLockASM)) {
-            // This is an Orderlock script - accept it
-            console.log('[MonsterBattle] Orderlock transaction accepted')
-            console.log(`[MonsterBattle] ${outputASM}`)
-            console.log(`[MonsterBattle] ${orderLockASM}`)
-            outputsToAdmit.push(index)
-            continue
+            console.log('[MonsterBattle] Orderlock transaction accepted');
+            outputsToAdmit.push(index);
+            continue;
+          }
+
+          // Check if it's a plain P2PKH (no inscription)
+          if (isP2PKH(output.lockingScript)) {
+            console.log('[MonsterBattle] P2PKH output ignored (wallet change)');
+            continue;
           }
 
           console.log('[MonsterBattle] Incoming ordinal transaction')
@@ -107,4 +111,16 @@ export default class MonsterBattleTopicManager implements TopicManager {
       shortDescription: "Stores bsv-21 tokens from the MonsterBattle web game"
     }
   }
+}
+
+// Helper to check if script is P2PKH
+function isP2PKH(script: Script): boolean {
+  const chunks = script.chunks;
+  if (chunks.length !== 5) return false;
+
+  return chunks[0].op === OP.OP_DUP &&
+    chunks[1].op === OP.OP_HASH160 &&
+    chunks[2].data && chunks[2].data.length === 20 && // 20-byte hash
+    chunks[3].op === OP.OP_EQUALVERIFY &&
+    chunks[4].op === OP.OP_CHECKSIG;
 }

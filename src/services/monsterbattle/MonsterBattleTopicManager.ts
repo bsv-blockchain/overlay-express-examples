@@ -29,36 +29,31 @@ export default class MonsterBattleTopicManager implements TopicManager {
       // Inspect every output
       for (const [index, output] of parsedTx.outputs.entries()) {
         try {
+          const outputASM = output.lockingScript.toASM();
+
           // Check for Orderlock script format first
-          const outputASM = output.lockingScript.toASM()
           if (outputASM.includes(orderLockASM)) {
-            // This is an Orderlock script - accept it
-            console.log('[MonsterBattle] Orderlock transaction accepted')
-            console.log(`[MonsterBattle] ${outputASM}`)
-            console.log(`[MonsterBattle] ${orderLockASM}`)
-            outputsToAdmit.push(index)
-            continue
+            console.log('[MonsterBattle] Orderlock transaction accepted');
+            outputsToAdmit.push(index);
+            continue;
+          }
+
+          // Check if it's a plain P2PKH (no inscription)
+          if (isP2PKH(output.lockingScript)) {
+            console.log('[MonsterBattle] P2PKH output ignored (wallet change)');
+            continue;
           }
 
           console.log('[MonsterBattle] Incoming ordinal transaction')
 
-          // Check for our ordinal script format
-          if (output.lockingScript.chunks.length < 14) throw new Error('Invalid locking script error 1')
-          if (output.lockingScript.chunks[0].op !== OP.OP_0) throw new Error('Invalid locking script error 2')
-          if (output.lockingScript.chunks[1].op !== OP.OP_IF) throw new Error('Invalid locking script error 3')
-          if (output.lockingScript.chunks[3].op !== OP.OP_1) throw new Error('Invalid locking script error 4')
-          if (output.lockingScript.chunks[5].op !== OP.OP_0) throw new Error('Invalid locking script error 5')
-          if (output.lockingScript.chunks[7].op !== OP.OP_ENDIF) throw new Error('Invalid locking script error 6')
-          if (output.lockingScript.chunks[8].op !== OP.OP_DUP) throw new Error('Invalid locking script error 7')
-          if (output.lockingScript.chunks[9].op !== OP.OP_HASH160) throw new Error('Invalid locking script error 8')
-          if (output.lockingScript.chunks[10].op !== 20) throw new Error('Invalid locking script error 9')
-          if (output.lockingScript.chunks[11].op !== OP.OP_EQUALVERIFY) throw new Error('Invalid locking script error 10')
-          if (output.lockingScript.chunks[12].op !== OP.OP_CHECKSIG) throw new Error('Invalid locking script error 11')
-          if (output.lockingScript.chunks[13].op !== OP.OP_RETURN) throw new Error('Invalid locking script error 12')
-
-          console.log(`[MonsterBattle] Ordinal transaction passed checks`)
-
-          outputsToAdmit.push(index)
+          // Check for ordinal inscription format
+          const result = checkScriptFormat(output.lockingScript)
+          if (result.valid) {
+            console.log(`[MonsterBattle] Ordinal transaction passed checks`)
+            outputsToAdmit.push(index)
+          } else {
+            console.log(`[MonsterBattle] Ordinal validation failed: ${result.message}`)
+          }
         } catch (err) {
           console.error(`Error processing output ${index}:`, err)
           // Continue with next output
@@ -107,4 +102,95 @@ export default class MonsterBattleTopicManager implements TopicManager {
       shortDescription: "Stores bsv-21 tokens from the MonsterBattle web game"
     }
   }
+}
+
+// Template sections for ordinal inscription validation
+// Structure: formatStart (0-5) | JSON (6) | formatMiddle (7-9) | hash (10) | formatEnd (11-12) | OP_RETURN (13)
+const TEMPLATES = {
+  // OP_0 OP_IF 'ord' OP_1 'application/bsv-21' OP_0
+  formatStart: '0063036f726451126170706c69636174696f6e2f6273762d323100',
+  // OP_ENDIF OP_DUP OP_HASH160
+  formatMiddle: '6876a9',
+  // OP_EQUALVERIFY OP_CHECKSIG
+  formatEnd: '88ac'
+}
+
+function checkScriptFormat(script: Script) {
+  try {
+    const chunks = script.chunks
+
+    // Check minimum chunk count
+    if (chunks.length < 14) {
+      throw new Error('Insufficient chunks in script')
+    }
+
+    // Check formatStart (chunks 0-5): OP_0 OP_IF 'ord' OP_1 'application/bsv-21' OP_0
+    const formatStart = new Script(chunks.slice(0, 6)).toHex()
+    if (formatStart !== TEMPLATES.formatStart) {
+      throw new Error('Malformed formatStart')
+    }
+
+    // Validate JSON payload (chunk 6)
+    try {
+      const formatJsonPayload = JSON.parse(Utils.toUTF8(chunks[6].data))
+      const incorrectlyFormatted =
+        (formatJsonPayload.p !== 'bsv-20') ||
+        !(formatJsonPayload.op === 'transfer' || formatJsonPayload.op === 'deploy+mint') ||
+        formatJsonPayload.amt === undefined ||
+        (formatJsonPayload.op === 'transfer' && !formatJsonPayload.id)
+
+      if (incorrectlyFormatted) {
+        throw new Error('Malformed JSON payload')
+      }
+    } catch (error) {
+      throw new Error(`Invalid JSON payload: ${error.message}`)
+    }
+
+    // Check formatMiddle (chunks 7-9): OP_ENDIF OP_DUP OP_HASH160
+    const formatMiddle = new Script(chunks.slice(7, 10)).toHex()
+    if (formatMiddle !== TEMPLATES.formatMiddle) {
+      throw new Error('Malformed formatMiddle')
+    }
+
+    // Check pubkey hash data (chunk 10): should be 20 bytes
+    if (!chunks[10].data || chunks[10].data.length !== 20) {
+      throw new Error('Invalid pubkey hash data length')
+    }
+
+    // Check formatEnd (chunks 11-12): OP_EQUALVERIFY OP_CHECKSIG
+    const formatEnd = new Script(chunks.slice(11, 13)).toHex()
+    if (formatEnd !== TEMPLATES.formatEnd) {
+      throw new Error('Malformed formatEnd')
+    }
+
+    // Check OP_RETURN (chunk 13)
+    if (chunks[13].op !== 106) {  // 106 = 0x6a = OP_RETURN
+      throw new Error('No OP_RETURN at the end')
+    }
+
+    // Validate OP_RETURN contains data
+    if (!chunks[13].data || chunks[13].data.length === 0) {
+      throw new Error('Missing OP_RETURN data')
+    }
+
+    return { valid: true, message: 'Script is valid' }
+
+  } catch (error) {
+    return {
+      valid: false,
+      message: error?.message || 'Invalid script format'
+    }
+  }
+}
+
+// Helper to check if script is P2PKH
+function isP2PKH(script: Script): boolean {
+  const chunks = script.chunks;
+  if (chunks.length !== 5) return false;
+
+  return chunks[0].op === OP.OP_DUP &&
+    chunks[1].op === OP.OP_HASH160 &&
+    chunks[2].data && chunks[2].data.length === 20 && // 20-byte hash
+    chunks[3].op === OP.OP_EQUALVERIFY &&
+    chunks[4].op === OP.OP_CHECKSIG;
 }

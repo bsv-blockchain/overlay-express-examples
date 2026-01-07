@@ -34,6 +34,9 @@ import DIDTopicManager from './services/did/DIDTopicManager'
 import DIDLookupService from './services/did/DIDLookupServiceFactory'
 import WalletConfigTopicManager from './services/walletconfig/WalletConfigTopicManager'
 import WalletConfigLookupService from './services/walletconfig/WalletConfigLookupServiceFactory'
+import TokenDemoTopicManager from './services/utility-tokens/TokenDemoTopicManager'
+import TokenDemoLookupService from './services/utility-tokens/TokenDemoLookupServiceFactory'
+
 import { config } from 'dotenv'
 import packageJson from '../package.json'
 config()
@@ -153,6 +156,10 @@ const main = async () => {
     // WalletConfig
     server.configureTopicManager('tm_walletconfig', new WalletConfigTopicManager())
     server.configureLookupServiceWithMongo('ls_walletconfig', WalletConfigLookupService)
+
+    // TokenDemo
+    server.configureTopicManager('tm_tokendemo', new TokenDemoTopicManager())
+    server.configureLookupServiceWithMongo('ls_tokendemo', TokenDemoLookupService)
 
     // For simple local deployments, sync can be disabled.
     server.configureEnableGASPSync(process.env?.GASP_ENABLED === 'true')

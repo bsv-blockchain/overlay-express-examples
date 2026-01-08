@@ -107,8 +107,8 @@ export default class MonsterBattleTopicManager implements TopicManager {
 // Template sections for ordinal inscription validation
 // Structure: formatStart (0-5) | JSON (6) | formatMiddle (7-9) | hash (10) | formatEnd (11-12) | OP_RETURN (13)
 const TEMPLATES = {
-  // OP_0 OP_IF 'ord' OP_1 'application/bsv-21' OP_0
-  formatStart: '0063036f726451126170706c69636174696f6e2f6273762d323100',
+  // OP_0 OP_IF 'ord' OP_1 'application/bsv-20' OP_0
+  formatStart: '0063036f726451126170706c69636174696f6e2f6273762d323000',
   // OP_ENDIF OP_DUP OP_HASH160
   formatMiddle: '6876a9',
   // OP_EQUALVERIFY OP_CHECKSIG
@@ -124,7 +124,7 @@ function checkScriptFormat(script: Script) {
       throw new Error('Insufficient chunks in script')
     }
 
-    // Check formatStart (chunks 0-5): OP_0 OP_IF 'ord' OP_1 'application/bsv-21' OP_0
+    // Check formatStart (chunks 0-5): OP_0 OP_IF 'ord' OP_1 'application/bsv-20' OP_0
     const formatStart = new Script(chunks.slice(0, 6)).toHex()
     if (formatStart !== TEMPLATES.formatStart) {
       throw new Error('Malformed formatStart')

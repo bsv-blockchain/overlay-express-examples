@@ -31,9 +31,5 @@
     "dotenv": "^17.2.4",
     "mongodb": "^7.1.0",
     "mysql2": "^3.16.3"
-  },
-  "resolutions": {
-    "@bsv/sdk": "^2.0.4",
-    "@bsv/overlay": "^2.0.2"
   }
 }

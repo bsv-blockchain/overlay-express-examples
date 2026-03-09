@@ -27,8 +27,8 @@ services:
 
   app:
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: overlay-express-examples/Dockerfile
     container_name: ts-app
     depends_on:
       - mongodb

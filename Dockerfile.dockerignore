@@ -1,0 +1,20 @@
+# BuildKit Dockerfile-specific ignore file.
+# The build context is the parent directory (overlays/).
+
+# Exclude all node_modules
+**/node_modules
+
+# Exclude build artifacts (but keep overlay-express/dist — needed as local dep)
+overlay-express-examples/dist
+
+# Exclude sibling repos not needed in the image
+gasp-core
+overlay-services
+overlay-discovery-services
+
+# Exclude git
+**/.git
+
+# Exclude env files
+**/.env
+**/.env.*

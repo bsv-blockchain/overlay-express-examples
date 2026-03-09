@@ -25,11 +25,11 @@ services:
     volumes:
       - mysql_data:/var/lib/mysql
 
-  app:
+  overlay-server:
     build:
-      context: ..
-      dockerfile: overlay-express-examples/Dockerfile
-    container_name: ts-app
+      context: .
+      dockerfile: Dockerfile
+    container_name: overlay-server
     depends_on:
       - mongodb
       - mysql
@@ -52,7 +52,7 @@ services:
     image: alpine:latest
     container_name: janitor
     depends_on:
-      - app
+      - overlay-server
     environment:
       ADMIN_TOKEN: 0f9888ec903a
     entrypoint: /bin/sh

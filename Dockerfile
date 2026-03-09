@@ -5,14 +5,13 @@ FROM node:22-alpine
 WORKDIR /app
 
 # Copy package.json and package-lock.json
-COPY overlay-express-examples/package*.json ./
+COPY package*.json .
 
-# Install the packed overlay-express tarball (overrides file: ref),
-# then install remaining dependencies
+# Install dependencies
 RUN npm install
 
 # Copy the entire application code into the container
-COPY overlay-express-examples/ .
+COPY . .
 
 # Expose the application port
 EXPOSE 8080

@@ -1,5 +1,9 @@
 # Overlay Express Examples
 
+> **⚠️ This repository is being archived.**
+>
+> Development has moved to the [ts-stack monorepo](https://github.com/bsv-blockchain/ts-stack/tree/main/infrastructure%20components/overlay-server). Open issues will be migrated there. This repository will be archived in the coming days — please open new issues and PRs in the monorepo going forward.
+
 [![BSV License](https://img.shields.io/badge/license-Open%20BSV-blue)](#license)
 
 A set of ready-to-run configuration examples for stand-alone Overlay nodes built with [`@bsv/overlay-express`](https://github.com/bsv-blockchain/overlay-express). Use these examples to spin-up your own overlay infrastructure for distributed applications on Bitcoin SV.

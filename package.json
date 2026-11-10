@@ -10,7 +10,7 @@
     "type": "git",
     "url": "git+https://sirdeggen@github.com/bsv-blockchain/overlay-express-examples.git"
   },
-  "license": "Open BSV",
+  "license": "Apache-2.0",
   "author": "BSV Association",
   "type": "commonjs",
   "main": "index.js",
